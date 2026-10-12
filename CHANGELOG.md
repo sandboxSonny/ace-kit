@@ -1,5 +1,11 @@
 # @sandboxsonny/ace-kit
 
+## 0.1.1
+
+### Patch Changes
+
+- 7cee0fb: Maintenance only, no change to the package: releases are now published with npm trusted publishing (GitHub proves its identity to npm) instead of a stored token.
+
 ## 0.1.0
 
 ### Minor Changes
