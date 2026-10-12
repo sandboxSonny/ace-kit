@@ -11,13 +11,13 @@
   ],
   "license": "MIT",
   "author": "Adams Development <sonny@adamsdevelopment.co.uk>",
-  "homepage": "https://github.com/sandboxsonny/ace-kit#readme",
+  "homepage": "https://github.com/sandboxSonny/ace-kit#readme",
   "bugs": {
-    "url": "https://github.com/sandboxsonny/ace-kit/issues"
+    "url": "https://github.com/sandboxSonny/ace-kit/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sandboxsonny/ace-kit.git"
+    "url": "git+https://github.com/sandboxSonny/ace-kit.git"
   },
   "type": "module",
   "sideEffects": [

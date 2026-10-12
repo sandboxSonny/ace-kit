@@ -6,7 +6,7 @@ Ace Kit draws content from a CMS into other people's websites, so its safety mat
 
 Please **don't open a public issue**. Report it privately, either:
 
-- with GitHub's [private vulnerability reporting](https://github.com/sandboxsonny/ace-kit/security/advisories/new) (Security tab → Report a vulnerability), or
+- with GitHub's [private vulnerability reporting](https://github.com/sandboxSonny/ace-kit/security/advisories/new) (Security tab → Report a vulnerability), or
 - by email to sonny@adamsdevelopment.co.uk with "Ace Kit security" in the subject.
 
 Say what you found, which version, and how to reproduce it. You can expect a reply within a few days, a fix or a clear explanation as soon as it can be done, and credit in the changelog if you want it.
