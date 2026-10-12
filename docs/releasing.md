@@ -16,25 +16,17 @@ It asks for the size and a summary, and writes a small file in `.changeset/`. Co
 
 When changes are merged to `main`, the **Release** workflow opens (or updates) a pull request called "Version Packages". It bumps `package.json` and writes the summaries into `CHANGELOG.md`. Read it, then merge it: the workflow then publishes the new version to npm and tags it.
 
-Each published version carries npm **provenance**: a public statement, signed by GitHub, that this exact package was built from this repository by this workflow. People can check it on the package's npm page.
+Each published version carries npm **provenance**: a public statement, signed by GitHub, that this exact package was built from this repository by this workflow. People can check it on the package's npm page (and with `npm audit signatures`).
 
 ## One-time setup
 
-1. **Own the scope.** The package is `@sandboxsonny/ace-kit`; a scope on npm belongs to a user or an organisation of that name. [Create an npm account](https://www.npmjs.com/signup) called `sandboxsonny` (or an organisation with that name), turn on two-factor authentication, and check <https://www.npmjs.com/package/@sandboxsonny/ace-kit> doesn't already exist. If the name isn't available, pick another scope and follow "If the scope changes" below.
-2. **A token for the workflow.** On npm: Access Tokens → Generate New Token → _Granular access token_, with **Read and write** permission on the `@sandboxsonny` scope, and no expiry longer than you want to manage. Add it to this repository as the secret **`NPM_TOKEN`** (Settings → Secrets and variables → Actions).
-3. **A public repository.** Provenance needs one. Also turn on branch protection for `main` and require the CI checks, so a release can only come from reviewed, passing code.
+1. **Own the scope.** The package is `@sandboxsonny/ace-kit`; a scope on npm belongs to a user or an organisation of that name. [Create an npm account](https://www.npmjs.com/signup) called `sandboxsonny` (or an organisation with that name) and turn on two-factor authentication. If the name isn't available, pick another scope and follow "If the scope changes" below.
+2. **A public repository,** with branch protection on `main` that requires the CI checks, so a release can only come from reviewed, passing code. Also turn on private vulnerability reporting (Settings → Security), which `SECURITY.md` points to.
+3. **The first publish,** which needs a token because the package doesn't exist yet to attach trusted publishing to. Create a _granular access token_ on npm with read and write permission on the scope and a short expiry, store it in the repository as the secret `NPM_TOKEN`, and pass it to the release step as `NODE_AUTH_TOKEN`. (Or publish version 0.1.0 by hand: `npm login`, then `npm run release`.)
+4. **Trusted publishing,** so no token is needed after that. On the package's page on npmjs.com → Settings → Trusted Publisher, add GitHub Actions with: the owner and repository exactly as GitHub spells them (**`sandboxSonny`** and **`ace-kit`**: the capitals matter), and the workflow file name **`release.yml`**. npm shows it as "not yet validated" until one publish goes through it, and drops it if that doesn't happen within 48 hours. Make the next release (even a patch with no code change) to validate it.
+5. **Remove the token:** delete the `NPM_TOKEN` secret and revoke the token on npm, and make sure the workflow does not pass `NODE_AUTH_TOKEN` (npm would use it instead of the trusted route).
 
-### The very first release
-
-The first version can also be published by hand, from a clean checkout of `main`:
-
-```sh
-npm login
-npm run version      # turns the pending changeset into 0.1.0 and the changelog (if not already done)
-npm run release      # runs the whole check, then publishes
-```
-
-(Provenance is only added when publishing from GitHub Actions (the workflow turns it on with `NPM_CONFIG_PROVENANCE`), so a hand-published first version has none; later ones do. It is deliberately not in `package.json`: npm refuses to publish from a laptop when it is.)
+The workflow in this repository is already in the last state: no token, Node 24 with npm 11.5.1 or newer, and `id-token: write`. If a publish fails with a message about authentication, check that the repository name and workflow file name in the Trusted Publisher settings match exactly, and that the job really is running `release.yml` on `main`.
 
 ## What the checks protect
 

@@ -9,7 +9,8 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   pull-requests: write
-  # Lets npm prove, publicly, that each version was built by this workflow from this repository (provenance).
+  # Lets this workflow prove its identity to npm, which is how it publishes without a stored token (npm "trusted
+  # publishing", set up on the package's page on npmjs.com), and lets npm record where each version was built.
   id-token: write
 
 jobs:
@@ -19,9 +20,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - run: npm install --global npm@^11.5.1
       - run: npm ci
       # With pending changesets this opens (or updates) a "Version Packages" pull request. When that is merged
       # there are none left, so it publishes the new version to npm and tags it.
@@ -33,6 +36,5 @@ jobs:
           title: "Version Packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # An npm token that may publish the @sandboxsonny scope: see docs/releasing.md.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # No npm token here on purpose: npm accepts this workflow's identity instead (see docs/releasing.md).
           NPM_CONFIG_PROVENANCE: "true"
