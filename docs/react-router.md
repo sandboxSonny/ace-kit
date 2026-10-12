@@ -1,0 +1,116 @@
+# React Router 7
+
+Ace Kit has a React Router adapter, so a site only writes its design. It needs `react-router` 7 in framework mode with server rendering (`ssr: true`, the default), `@react-router/node`, `react-dom` and `vite`.
+
+```
+app/
+  routes.ts            route("*", "routes/page.tsx")            one route draws every page
+  entry.server.tsx     one line
+  root.tsx             createRootLoader + your layout and header
+  routes/page.tsx      createPageLoader + your page
+vite.config.ts         plugins: [ace(), reactRouter()]
+```
+
+## Set up
+
+**1. The Vite plugin** reads the settings from `.env` in development and makes sure the site uses one copy of React:
+
+```ts
+// vite.config.ts
+import ace from "@sandboxsonny/ace-kit/vite";
+import { reactRouter } from "@react-router/dev/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({ plugins: [ace(), reactRouter()] });
+```
+
+The settings are environment variables, read when the server starts, so one build runs anywhere. Put them in `.env` for development and in the host's environment for production:
+
+| Variable                   | Default                 | Meaning                                                   |
+| -------------------------- | ----------------------- | --------------------------------------------------------- |
+| `ACE_API_URL`              | `http://localhost:8080` | where the CMS Ace API lives                               |
+| `ACE_SITE_DOMAIN`          | `localhost`             | the domain this site has in the CMS (the port is ignored) |
+| `ACE_PREVIEW_ADMIN_ORIGIN` | `http://localhost:5173` | where the CMS admin app runs                              |
+
+**2. The server entry**, which renders pages and lets the CMS's admin app (and only it) frame the site for [live preview](./live-preview.md):
+
+```tsx
+// app/entry.server.tsx
+export { handleRequest as default, streamTimeout } from "@sandboxsonny/ace-kit/react-router/server";
+```
+
+It waits until a page is completely ready before answering (every page is fully loaded by its loader, and crawlers get whole pages). If you stream deferred data, write your own entry and call `addFramingPolicy(responseHeaders, origin)` in it.
+
+**3. One route for every page:**
+
+```ts
+// app/routes.ts
+import { type RouteConfig, route } from "@react-router/dev/routes";
+
+export default [route("*", "routes/page.tsx")] satisfies RouteConfig;
+```
+
+```tsx
+// app/routes/page.tsx
+import { AceNotice, createMeta } from "@sandboxsonny/ace-kit/react-router";
+import { createPageLoader } from "@sandboxsonny/ace-kit/react-router/server";
+import type { Route } from "./+types/page";
+
+export const loader = createPageLoader();
+export { headers } from "@sandboxsonny/ace-kit/react-router/server";
+export const meta = createMeta({ siteName: "My Site" });
+
+export default function Page({ loaderData: page }: Route.ComponentProps) {
+  return page.kind === "entry" ? <h1>{page.entry.title}</h1> : <AceNotice page={page} />;
+}
+```
+
+The loader reads the address (`/{content type}/{entry}`, and `/` is the `home` entry of `pages`), loads the entry and answers with the right status and headers: a missing page is a real 404, an unreachable CMS a 503, an expired preview a 403, `/pages/home` redirects to `/`, and a preview is never cached or indexed. `page.kind` is `entry`, `not-found`, `unavailable` or `preview-expired`. `createMeta` titles the page from the entry (followed by the site's name), adds its description, and asks search engines to ignore a preview. With [typed content](./typed-content.md), `createPageLoader<PageValues>()` gives `page.entry.values` its real shape.
+
+**4. The root route** loads the header menu and keeps previews fresh:
+
+```tsx
+// app/root.tsx
+import { useAceMenu, useAcePreview } from "@sandboxsonny/ace-kit/react-router";
+import { createRootLoader } from "@sandboxsonny/ace-kit/react-router/server";
+
+export const loader = createRootLoader({
+  menu: "main-menu", // the CMS menu with this handle
+  fallback: [{ label: "Home", to: "/" }], // if the site has none yet, or the CMS is down
+});
+
+export default function App() {
+  useAcePreview(); // in the CMS's preview frame, redraws the page when the editor saves a draft
+  const links = useAceMenu(); // [{ label, to, children? }]
+  return (/* your header, <Outlet />, your footer */);
+}
+```
+
+`useAcePreview` and `useAceMenu` read what `createRootLoader` loaded, so call them in the root route (or anywhere below it). If your root loader loads more, spread ours into yours: `return { ...(await aceLoader(args)), other }`.
+
+## Components
+
+From `@sandboxsonny/ace-kit/react-router` (these are safe in the browser):
+
+- **AceRichText** draws a rich text field. Links to pages of this site are router `Link`s, so navigating doesn't reload the page. It renders bare elements; style them from a wrapper.
+- **AceTextArea** draws a Textarea field (plain text): `multiline` (the default) makes paragraphs and line breaks, `multiline={false}` is one line of text.
+- **AceImage** is an `<img>` with `src`, `srcset`, `sizes`, size and alt text. Set `sizes` to how wide it is shown, and `lazy={false}` for the image at the top of the page.
+- **AceNotice** is the heading and message for a page that isn't an entry. Give it a `className`.
+
+## Reading content in your own loaders
+
+From `@sandboxsonny/ace-kit/react-router/server`, with no client to create:
+
+```ts
+import { getEntries, getEntry, getMenuLinks } from "@sandboxsonny/ace-kit/react-router/server";
+
+export async function loader() {
+  return { posts: await getEntries("posts", { limit: 10 }) };
+}
+```
+
+`getAceClient()` is the client behind them. Import these only in loaders, `headers` and `entry.server.tsx`: React Router leaves them out of the browser bundle, which is what keeps the settings and the CMS address on the server.
+
+## Without the adapter
+
+Everything the adapter does is built from the framework-free [core](./getting-started.md): `loadPage`, `loadMenuLinks`, `previewTokenFrom`, `addFramingPolicy`, the [React components](./react.md) and `usePreviewRefresh`. The adapter is about 150 lines; read it if you need to do something it doesn't.

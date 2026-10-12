@@ -1,0 +1,25 @@
+---
+import { isCurrentPage } from "../dist/index.js";
+import type { AceNavigationLink } from "../dist/index.js";
+
+type Props = {
+  links: AceNavigationLink[];
+  pathname: string;
+  depth?: number;
+};
+
+const { links, pathname, depth = 0 } = Astro.props;
+---
+
+<ul class={depth === 0 ? "ace-menu__list" : "ace-menu__sublist"}>
+  {links.map((link) => (
+    <li>
+      <a href={link.to} aria-current={isCurrentPage(link, pathname) ? "page" : undefined}>
+        {link.label}
+      </a>
+      {link.children && link.children.length > 0 && (
+        <Astro.self links={link.children} pathname={pathname} depth={depth + 1} />
+      )}
+    </li>
+  ))}
+</ul>

@@ -1,0 +1,12 @@
+---
+import { renderRichText } from "../dist/index.js";
+import type { AceRichTextDocument } from "../dist/index.js";
+
+type Props = {
+  document: AceRichTextDocument;
+};
+
+const { document } = Astro.props;
+---
+
+<Fragment set:html={renderRichText(document)} />

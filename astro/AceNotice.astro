@@ -1,0 +1,19 @@
+---
+import { pageNotices } from "../dist/index.js";
+import type { AcePage } from "../dist/index.js";
+
+type Props = {
+  /** The answer from `getPage` when it isn't an entry. */
+  page: Exclude<AcePage, { kind: "entry" }>;
+  class?: string;
+};
+
+const { page, class: className } = Astro.props;
+const { heading, message } = pageNotices[page.kind];
+---
+
+<div class={className}>
+  <h1>{heading}</h1>
+  <p>{message}</p>
+  {page.kind !== "preview-expired" && <a href="/">Back to the home page</a>}
+</div>

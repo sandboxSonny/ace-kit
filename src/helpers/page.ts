@@ -1,0 +1,45 @@
+import { AcePreviewExpiredError, AceUnavailableError } from "../client/errors";
+import type { AceClient } from "../client/create-client";
+import type { AceEntry } from "../types/entries";
+import type { AcePage } from "../types/page";
+import { addressFromPath, isHomeAddress } from "./addressing";
+import { previewHeaders, previewTokenFrom } from "./preview";
+
+/**
+ * Works out what to do for a request: which entry to show, where to redirect, or which message to give. It does
+ * the same for every framework, so a route only has to act on the answer.
+ *
+ * - `slug` is the part of the path after the site's root, e.g. "pages/about" ("" or undefined for the home page).
+ * - `url` is the full request address; it carries the preview token the CMS puts in its preview frame.
+ *
+ * Addresses are `/{content type}/{entry}` as on Shopify, and `/` is the home entry. A page shown with a preview
+ * token is never cached or indexed (the answer's `headers` say so).
+ */
+export async function loadPage<Values = Record<string, unknown>>(
+  client: AceClient,
+  { slug, url }: { slug: string | undefined; url: URL },
+): Promise<AcePage<Values>> {
+  const address = addressFromPath(slug);
+  const previewToken = previewTokenFrom(url);
+  const headers = previewToken ? { ...previewHeaders } : {};
+
+  // The home entry has one address, "/". The preview token travels with the redirect; such a redirect is not worth remembering.
+  if (slug && address && isHomeAddress(address)) {
+    return { kind: "redirect", status: url.search ? 302 : 301, location: `/${url.search}`, headers };
+  }
+  if (!address) return { kind: "not-found", status: 404, headers };
+
+  try {
+    const entry = (await client.getEntry(address.contentTypeHandle, address.entryHandle, {
+      previewToken,
+    })) as AceEntry<Values> | null;
+    return entry ? { kind: "entry", status: 200, entry, headers } : { kind: "not-found", status: 404, headers };
+  } catch (error) {
+    if (error instanceof AcePreviewExpiredError) return { kind: "preview-expired", status: 403, headers };
+    if (error instanceof AceUnavailableError) {
+      console.error(error.message);
+      return { kind: "unavailable", status: 503, headers };
+    }
+    throw error;
+  }
+}

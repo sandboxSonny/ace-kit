@@ -1,0 +1,14 @@
+---
+import { renderTextArea } from "../dist/index.js";
+
+type Props = {
+  /** The text area field's value. Missing or blank draws nothing. */
+  value: string | undefined;
+  /** True (the default): blank lines start new paragraphs and a single new line is a line break. False: one line of text. */
+  multiline?: boolean;
+};
+
+const { value, multiline = true } = Astro.props;
+---
+
+<Fragment set:html={renderTextArea(value, { multiline })} />

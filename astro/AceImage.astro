@@ -1,0 +1,29 @@
+---
+import { imageAttributes } from "../dist/index.js";
+import type { AceImageData } from "../dist/index.js";
+
+type Props = {
+  image: AceImageData;
+  /** How wide the image is shown, e.g. "(min-width: 64rem) 64rem, 100vw". The browser uses it to pick a copy from srcset. */
+  sizes: string;
+  /** Leave on for images below the first screen; turn off for the one at the top of the page. */
+  lazy?: boolean;
+  class?: string;
+};
+
+const { image, sizes, lazy = true, class: className } = Astro.props;
+const attributes = imageAttributes(image, { sizes, lazy });
+---
+
+<img
+  src={attributes.src}
+  srcset={attributes.srcSet}
+  sizes={attributes.sizes}
+  width={attributes.width}
+  height={attributes.height}
+  alt={attributes.alt}
+  loading={attributes.loading}
+  decoding={attributes.decoding}
+  fetchpriority={attributes.fetchPriority}
+  class={className}
+/>

@@ -1,0 +1,15 @@
+---
+import { ACE_PREVIEW_ADMIN_ORIGIN } from "astro:env/server";
+
+import { previewTokenFrom } from "../dist/index.js";
+
+// Only a page opened by the CMS's editor (it carries a preview token) listens for the editor's messages.
+const isPreview = previewTokenFrom(Astro.url) !== null;
+---
+
+{isPreview && <div data-ace-preview-origin={ACE_PREVIEW_ADMIN_ORIGIN} hidden />}
+
+<!-- In the CMS preview frame, this refetches the page when the editor saves a draft. It does nothing elsewhere. -->
+<script>
+  import "../dist/preview-script.js";
+</script>

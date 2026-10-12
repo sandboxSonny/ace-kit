@@ -1,0 +1,24 @@
+---
+import type { AceNavigationLink } from "../dist/index.js";
+import { getMenuLinks } from "../dist/astro.js";
+import AceMenuList from "./AceMenuList.astro";
+
+type Props = {
+  /** The handle of the menu in the CMS, e.g. "main-menu". */
+  handle: string;
+  /** Shown if the site has no such menu yet, or the CMS can't be reached. */
+  fallback?: AceNavigationLink[];
+  /** What the navigation is called for people using screen readers. */
+  label?: string;
+  class?: string;
+};
+
+const { handle, fallback = [], label = "Main", class: className } = Astro.props;
+const links = await getMenuLinks(handle, { fallback });
+---
+
+{links.length > 0 && (
+  <nav aria-label={label} class:list={["ace-menu", className]}>
+    <AceMenuList links={links} pathname={Astro.url.pathname} />
+  </nav>
+)}

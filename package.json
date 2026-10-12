@@ -1,0 +1,160 @@
+{
+  "name": "@sandboxsonny/ace-kit",
+  "version": "0.1.0",
+  "description": "Everything a website needs to use CMS Ace: a typed client, addressing, images, menus, rich text, live preview, and Astro and React adapters.",
+  "keywords": [
+    "cms",
+    "cms-ace",
+    "headless-cms",
+    "astro",
+    "react"
+  ],
+  "license": "MIT",
+  "author": "Adams Development <sonny@adamsdevelopment.co.uk>",
+  "homepage": "https://github.com/sandboxsonny/ace-kit#readme",
+  "bugs": {
+    "url": "https://github.com/sandboxsonny/ace-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandboxsonny/ace-kit.git"
+  },
+  "type": "module",
+  "sideEffects": [
+    "./dist/preview-script.js"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist",
+    "astro",
+    "docs",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./react-router": {
+      "types": "./dist/react-router.d.ts",
+      "import": "./dist/react-router.js"
+    },
+    "./react-router/server": {
+      "types": "./dist/react-router-server.d.ts",
+      "import": "./dist/react-router-server.js"
+    },
+    "./astro": {
+      "types": "./dist/astro.d.ts",
+      "import": "./dist/astro.js"
+    },
+    "./astro/integration": {
+      "types": "./dist/astro-integration.d.ts",
+      "import": "./dist/astro-integration.js"
+    },
+    "./astro/middleware": {
+      "import": "./dist/astro-middleware.js"
+    },
+    "./astro/*.astro": "./astro/*.astro",
+    "./preview-script": {
+      "import": "./dist/preview-script.js"
+    },
+    "./package.json": "./package.json",
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    }
+  },
+  "bin": {
+    "ace-kit": "./dist/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run check:package",
+    "check:package": "node scripts/check-package.mjs",
+    "pack:local": "npm run build && npm pack",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
+    "changeset": "changeset",
+    "version": "changeset version && prettier --write CHANGELOG.md package.json",
+    "release": "npm run check && changeset publish"
+  },
+  "peerDependencies": {
+    "astro": ">=5",
+    "react": ">=18",
+    "react-router": ">=7",
+    "react-dom": ">=18",
+    "@react-router/node": ">=7",
+    "vite": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "astro": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-router": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "@react-router/node": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "@eslint/js": "^10.0.1",
+    "@react-router/node": "^7.18.4",
+    "@storybook/addon-docs": "^10.6.1",
+    "@storybook/react-vite": "^10.6.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "astro": "^7.3.8",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-astro": "^1.7.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^7.18.4",
+    "storybook": "^10.6.1",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  },
+  "overrides": {
+    "esbuild": "^0.28.2"
+  }
+}
