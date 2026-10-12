@@ -5,9 +5,30 @@ updates:
     schedule:
       interval: weekly
     groups:
+      # Small updates arrive together as one pull request. A major version of anything is its own pull request, so
+      # one that can't be installed or breaks a build doesn't hold the rest back.
       development-tools:
         dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # Not until the tools around them support them. typescript-eslint, for one, doesn't support TypeScript 7 yet.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # The kit supports React Router 7 and is tested against it. Supporting 8 is a deliberate piece of work (and a
+      # changeset), not an automatic bump.
+      - dependency-name: react-router
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@react-router/node"
+        update-types: ["version-update:semver-major"]
+      # Types follow the oldest Node the kit supports (22), not the newest.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      # Version 2 renames every input and drops the GITHUB_TOKEN environment variable, which the release workflow
+      # uses. Move to it deliberately, and test it with a real release.
+      - dependency-name: changesets/action
+        update-types: ["version-update:semver-major"]
