@@ -23,13 +23,14 @@ const approved = {
   user: { email: "sam@example.com" },
 };
 
-const loginRoutes = (...polls: unknown[]): Routes => {
+const loginRoutesAt = (address: string, ...polls: unknown[]): Routes => {
   const queue = [...polls];
   return {
-    [`POST ${api}/auth/device`]: () => json(started, 201),
-    [`POST ${api}/auth/device/token`]: () => json(queue.shift() ?? approved),
+    [`POST ${address}/auth/device`]: () => json(started, 201),
+    [`POST ${address}/auth/device/token`]: () => json(queue.shift() ?? approved),
   };
 };
+const loginRoutes = (...polls: unknown[]): Routes => loginRoutesAt(api, ...polls);
 
 describe("ace-kit login", () => {
   it("shows the code and the page, opens the page, waits for approval and keeps the login", async () => {
@@ -74,10 +75,13 @@ describe("ace-kit login", () => {
     expect(Object.keys(store.items)).toEqual([api]);
   });
 
-  it("says what is missing or wrong with the address", async () => {
-    const missing = fakeEnvironment();
-    expect(await runCli(["login"], missing.environment)).toBe(1);
-    expect(missing.errors.join()).toContain("Give the API address");
+  it("signs in to the hosted CMS Ace when it is given no address at all", async () => {
+    const hosted = fakeEnvironment(loginRoutesAt("https://api.ace-cms.co.uk", approved));
+    expect(await runCli(["login"], hosted.environment)).toBe(0);
+    expect(Object.keys(hosted.store.items)).toEqual(["https://api.ace-cms.co.uk"]);
+  });
+
+  it("says what is wrong with the address", async () => {
     const wrong = fakeEnvironment();
     expect(await runCli(["login", "--api-url", "ftp://example.com"], wrong.environment)).toBe(1);
     expect(wrong.errors.join()).toContain("must start with http:// or https://");
@@ -329,7 +333,7 @@ describe("ace-kit generate (still works as before)", () => {
   it("asks for the settings it needs", async () => {
     const { environment, errors } = fakeEnvironment();
     expect(await runCli(["generate"], environment)).toBe(1);
-    expect(errors.join()).toContain("--api-url and --domain");
+    expect(errors.join()).toContain("--site, or ACE_SITE_DOMAIN");
   });
 });
 

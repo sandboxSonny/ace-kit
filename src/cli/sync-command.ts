@@ -5,6 +5,7 @@ import { findSchemaFiles } from "../sections/find-schemas";
 import { loadSchemas } from "../sections/load-schemas";
 import { sectionTypesPayload } from "../sections/payload";
 import { syncSectionTypes } from "../sections/sync";
+import { domainFromSite, hostedApiUrl } from "../helpers/platform";
 import { isLocalApiUrl } from "./api-url";
 import type { CliEnvironment } from "./environment";
 import { normaliseApiUrl } from "../auth/login-store";
@@ -12,7 +13,7 @@ import { normaliseApiUrl } from "../auth/login-store";
 export const syncUsage = `ace-kit sync: send the section types your code defines to CMS Ace.
 
 Usage:
-  ace-kit sync [--api-url <address>] [--domain <domain>] [--dir <folder>]
+  ace-kit sync [--site <domain>] [--api-url <address>] [--dir <folder>]
 
 It finds every *.schema.ts file in the folder (src by default), checks them, and makes the CMS's section types for your
 site match. The dev server does this for you whenever a schema file is saved; run it yourself for a one-off sync, or on a
@@ -22,13 +23,12 @@ Nothing is deleted: a section type, block or field you take out of your code is 
 written in it survives. If any schema file can't be loaded, nothing is synced.
 
 Options:
-  --api-url   Where the CMS Ace API lives (default: ACE_API_URL, else http://localhost:8080).
-  --domain    The domain your site has in the CMS (default: ACE_SITE_DOMAIN, else localhost).
+  --site      The domain your site has in the CMS, e.g. example.com (default: ACE_SITE_DOMAIN, else localhost).
+              (--domain means the same.)
+  --api-url   Where the CMS Ace API lives (default: ACE_API_URL, else the hosted CMS Ace). Only for a CMS on your own machine.
   --dir       The folder to look in (default: src).
   --help      Show this message.
 `;
-
-const defaultApiUrl = "http://localhost:8080";
 
 /** ACE_SYNC_SECTIONS: "false" (or off, no, 0) turns the dev server's automatic sync off; "remote" lets it sync to a hosted CMS. */
 const isSwitchedOff = (value: string | undefined) =>
@@ -40,6 +40,7 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
     args: commandArguments,
     options: {
       "api-url": { type: "string" },
+      site: { type: "string" },
       domain: { type: "string" },
       dir: { type: "string" },
       // Set by the dev server, which syncs on its own: it stays quiet when there is nothing to do, and keeps to a
@@ -59,12 +60,13 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
   // (Not the address last signed in to: that may be a hosted CMS the site isn't pointed at.)
   let apiUrl: string;
   try {
-    apiUrl = normaliseApiUrl(values["api-url"] ?? environment.variables.ACE_API_URL ?? defaultApiUrl);
+    apiUrl = normaliseApiUrl(values["api-url"] ?? environment.variables.ACE_API_URL ?? hostedApiUrl);
   } catch (error) {
     environment.error(error instanceof Error ? error.message : String(error));
     return 1;
   }
-  const siteDomain = values.domain ?? environment.variables.ACE_SITE_DOMAIN ?? "localhost";
+  const given = values.site ?? values.domain ?? environment.variables.ACE_SITE_DOMAIN;
+  const siteDomain = given ? domainFromSite(given) : "localhost";
 
   // The dev server points the process at the developer's own dev site (see startDevSite): syncing to that is safe.
   const aimedAtDevSite = environment.variables.ACE_DEV_SITE_ACTIVE === "1";
@@ -136,7 +138,7 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
       environment.error(
         `The CMS at ${apiUrl} has no site with the domain "${outcome.domain}" that you can see` +
           (outcome.available.length > 0 ? ` (your sites: ${outcome.available.join(", ")})` : "") +
-          ". Set ACE_SITE_DOMAIN or pass --domain.",
+          ". Set ACE_SITE_DOMAIN or pass --site.",
       );
       return 1;
     case "forbidden":

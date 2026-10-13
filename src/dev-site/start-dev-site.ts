@@ -2,6 +2,7 @@ import { loadEnv } from "vite";
 
 import { chooseLoginStore } from "../auth/choose-store";
 import { normaliseApiUrl } from "../auth/login-store";
+import { hostedApiUrl } from "../helpers/platform";
 import { runCommand } from "../cli/environment";
 import { findOrCreateDevSite } from "./find-or-create";
 import { prepareDevSite } from "./prepare-dev-site";
@@ -22,6 +23,8 @@ export type StartDevSiteOptions = {
   /** The site's folder, for its .env files. */
   root: string;
   mode: string;
+  /** The site's domain when ACE_SITE_DOMAIN is not set, e.g. from Astro's `site` setting. */
+  siteDomain?: string;
   log: DevSiteLog;
   /** Replaced in tests. */
   environment?: {
@@ -31,8 +34,6 @@ export type StartDevSiteOptions = {
     fetchImplementation: typeof fetch;
   };
 };
-
-const defaultApiUrl = "http://localhost:8080";
 
 /**
  * Called when a dev server starts. If the site works against a hosted CMS (or ACE_DEV_SITE=true), gets the
@@ -46,19 +47,23 @@ export async function startDevSite(options: StartDevSiteOptions): Promise<DevSit
   // A site's own tests start a dev server too, and must not reach out to a CMS.
   if (mode === "test" || process.env.VITEST) return null;
 
-  const variables = options.environment?.variables ?? { ...loadEnv(mode, root, "ACE_"), ...process.env };
+  const base = options.environment?.variables ?? { ...loadEnv(mode, root, "ACE_"), ...process.env };
+  const realDomain = base.ACE_SITE_DOMAIN?.trim() || options.siteDomain?.trim() || "localhost";
+  const variables: Record<string, string | undefined> = { ...base, ACE_SITE_DOMAIN: realDomain };
   let apiUrl: string;
   try {
-    apiUrl = normaliseApiUrl(variables.ACE_API_URL ?? defaultApiUrl);
+    apiUrl = normaliseApiUrl(variables.ACE_API_URL ?? hostedApiUrl);
   } catch {
     return null; // the site's own settings are wrong; the site will say so
   }
-  const environment = options.environment ?? {
-    variables,
-    store: await chooseLoginStore({ platform: process.platform, variables, run: runCommand }),
-    now: Date.now,
-    fetchImplementation: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, init),
-  };
+  const environment = options.environment
+    ? { ...options.environment, variables }
+    : {
+        variables,
+        store: await chooseLoginStore({ platform: process.platform, variables, run: runCommand }),
+        now: Date.now,
+        fetchImplementation: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, init),
+      };
 
   const outcome = await prepareDevSite({ apiUrl, ...environment });
   switch (outcome.kind) {
@@ -82,7 +87,7 @@ export async function startDevSite(options: StartDevSiteOptions): Promise<DevSit
               "This dev server reads and syncs to it; the live site is not touched."
           : `Using your dev site, "${outcome.site.name}" (${outcome.site.domain}). The live site is not touched.`,
       );
-      const siteDomain = variables.ACE_SITE_DOMAIN?.trim() || "localhost";
+      const siteDomain = realDomain;
       return {
         domain: outcome.site.domain,
         setPreviewUrl: async (previewUrl) => {

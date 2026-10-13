@@ -24,7 +24,7 @@ const page = await loadPage(cms, { slug: "pages/about", url: new URL(request.url
 if (page.kind === "entry") console.log(page.entry.title, page.entry.values);
 ```
 
-On Astro there is nothing to wire up by hand: add the integration to `astro.config.mjs` (`integrations: [ace()]`), set `ACE_API_URL` and `ACE_SITE_DOMAIN`, and read the CMS straight from a page:
+On Astro there is nothing to wire up by hand: add the integration to `astro.config.mjs` (`integrations: [ace()]`), set your site's domain (`site: "https://www.example.com"` in the Astro config, or `ACE_SITE_DOMAIN`), and read the CMS straight from a page:
 
 ```astro
 ---

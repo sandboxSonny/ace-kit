@@ -10,18 +10,18 @@ npx ace-kit generate   # write TypeScript types (see Typed content)
 npx ace-kit sync       # send your section types to the CMS (see Sections)
 ```
 
-Every command takes `--api-url`, or reads `ACE_API_URL` from the environment or a `.env` file in the folder you run it in. Failing both, it uses the address you last signed in to (kept in a small file beside your logins), so after `ace-kit login --api-url …` you can simply run `ace-kit whoami` from anywhere.
+Commands talk to the hosted CMS Ace unless told otherwise. Only for a CMS on your own machine, give `--api-url`, or set `ACE_API_URL` in the environment or a `.env` file in the folder you run it in. Failing both, a command uses the address you last signed in to (kept in a small file beside your logins), and failing that the hosted one, so `ace-kit login` and `ace-kit whoami` need no flags at all. Commands about a site (`sync`, `generate`) take `--site example.com`, or read `ACE_SITE_DOMAIN`.
 
 ## Signing in
 
 ```sh
-npx ace-kit login --api-url http://localhost:8080
+npx ace-kit login
 ```
 
 ```
-Signing in to http://localhost:8080
+Signing in to https://api.ace-cms.co.uk
 
-  1. Go to   http://localhost:5173/device
+  1. Go to   https://app.ace-cms.co.uk/device
   2. Type    BCDF-GHJK
 
 Check the code on that page matches. Waiting for you to approve it (Ctrl-C to cancel)...
