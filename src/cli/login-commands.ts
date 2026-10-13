@@ -1,8 +1,8 @@
 import { parseArgs } from "node:util";
 
 import { DeviceLoginError, startDeviceLogin, waitForApproval } from "../auth/device-login";
-import { normaliseApiUrl } from "../auth/login-store";
 import { resolveLogin } from "../auth/resolve-login";
+import { isLocalApiUrl, resolveApiUrl } from "./api-url";
 import type { CliEnvironment } from "./environment";
 
 export const loginUsage = `ace-kit login: sign in to CMS Ace from the command line.
@@ -22,10 +22,7 @@ where nobody can approve a login in a browser, set ACE_TOKEN instead.
 
 const requestTimeoutMilliseconds = 15_000;
 
-/**
- * Reads --api-url, then ACE_API_URL, then the address last signed in to. Returns null after saying what is
- * wrong.
- */
+/** Reads --api-url (and --help). Returns null after saying what is wrong. */
 async function readApiUrl(
   commandArguments: string[],
   environment: CliEnvironment,
@@ -36,19 +33,8 @@ async function readApiUrl(
     options: { "api-url": { type: "string" }, help: { type: "boolean" } },
   });
   if (values.help) return { help: true };
-  const address = values["api-url"] ?? environment.variables.ACE_API_URL ?? (await environment.lastApiUrl.read());
-  if (!address) {
-    environment.error(
-      "Give the API address: --api-url, or ACE_API_URL in the environment or a .env file. (Once you have signed in, that address is remembered.)",
-    );
-    return null;
-  }
-  try {
-    return { apiUrl: normaliseApiUrl(address) };
-  } catch (error) {
-    environment.error(error instanceof Error ? error.message : String(error));
-    return null;
-  }
+  const apiUrl = await resolveApiUrl(values["api-url"], environment);
+  return apiUrl === null ? null : { apiUrl };
 }
 
 /** A web address a browser may be sent to, or null: the CMS chooses it, so nothing but http and https is opened. */
@@ -61,8 +47,6 @@ function webAddress(address: string): string | null {
   }
 }
 
-const isLocal = (apiUrl: string) => ["localhost", "127.0.0.1", "[::1]"].includes(new URL(apiUrl).hostname);
-
 export async function loginCommand(commandArguments: string[], environment: CliEnvironment): Promise<number> {
   const read = await readApiUrl(commandArguments, environment);
   if (!read) return 1;
@@ -71,7 +55,7 @@ export async function loginCommand(commandArguments: string[], environment: CliE
     return 0;
   }
   const { apiUrl } = read;
-  if (apiUrl.startsWith("http://") && !isLocal(apiUrl)) {
+  if (apiUrl.startsWith("http://") && !isLocalApiUrl(apiUrl)) {
     environment.error(
       `Warning: ${apiUrl} is not encrypted (http://), so the login could be read on the way. Use https:// if you can.`,
     );
