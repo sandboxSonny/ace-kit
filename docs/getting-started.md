@@ -22,7 +22,7 @@ npm install @sandboxsonny/ace-kit
 | `@sandboxsonny/ace-kit/react-router`                     | React Router 7, browser-safe: `AceRichText` (router links), `AceImage`, `AceNotice`, `createMeta`, `useAceMenu`, `useAcePreview`                                  |
 | `@sandboxsonny/ace-kit/react-router/server`              | React Router 7, server only: `createPageLoader`, `createRootLoader`, `handleRequest` (the server entry), `getEntry`, `getEntries`, `getMenuLinks`, `getAceClient` |
 | `@sandboxsonny/ace-kit/vite`                             | A Vite plugin: reads `ACE_` settings from `.env` in development and keeps one copy of React                                                                       |
-| `ace-kit` (command)                                      | `ace-kit generate`, which writes TypeScript types for your content                                                                                                |
+| `ace-kit` (command)                                      | `ace-kit generate` (TypeScript types for your content), `login`, `logout`, `whoami` (see [the command line](./command-line.md))                                   |
 
 ## The client
 

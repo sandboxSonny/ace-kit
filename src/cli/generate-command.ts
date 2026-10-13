@@ -5,8 +5,9 @@ import { parseArgs } from "node:util";
 import { createAceClient } from "../client/create-client";
 import { generateTypes } from "../helpers/generate-types";
 import { packageName } from "../helpers/package-name";
+import type { CliEnvironment } from "./environment";
 
-const usage = `ace-kit generate: write TypeScript types for your CMS Ace content types.
+export const generateUsage = `ace-kit generate: write TypeScript types for your CMS Ace content types.
 
 Usage:
   ace-kit generate [--api-url <address>] [--domain <domain>] [--out <file>]
@@ -18,16 +19,10 @@ Options:
   --help      Show this message.
 `;
 
-async function main(): Promise<number> {
-  // Settings may be in a .env file in the folder the command runs in (variables already set win).
-  try {
-    process.loadEnvFile(".env");
-  } catch {
-    // No .env file: the environment and the options are enough.
-  }
-
-  const { positionals, values } = parseArgs({
-    allowPositionals: true,
+export async function generateCommand(commandArguments: string[], environment: CliEnvironment): Promise<number> {
+  const { values } = parseArgs({
+    // eslint-disable-next-line id-denylist -- "args" is the name node's parseArgs gives this option.
+    args: commandArguments,
     options: {
       "api-url": { type: "string" },
       domain: { type: "string" },
@@ -35,34 +30,32 @@ async function main(): Promise<number> {
       help: { type: "boolean" },
     },
   });
-
-  if (values.help || positionals[0] !== "generate") {
-    console.log(usage);
-    return values.help ? 0 : 1;
+  if (values.help) {
+    environment.out(generateUsage);
+    return 0;
   }
 
-  const apiUrl = values["api-url"] ?? process.env.ACE_API_URL;
-  const siteDomain = values.domain ?? process.env.ACE_SITE_DOMAIN;
+  const apiUrl = values["api-url"] ?? environment.variables.ACE_API_URL;
+  const siteDomain = values.domain ?? environment.variables.ACE_SITE_DOMAIN;
   if (!apiUrl || !siteDomain) {
-    console.error(
+    environment.error(
       "Give the API address and the site's domain: --api-url and --domain, or ACE_API_URL and ACE_SITE_DOMAIN.",
     );
     return 1;
   }
 
-  const client = createAceClient({ apiUrl, siteDomain, cacheSeconds: 0 });
+  const client = createAceClient({
+    apiUrl,
+    siteDomain,
+    cacheSeconds: 0,
+    fetchImplementation: environment.fetchImplementation,
+  });
   const contentTypes = await client.getContentTypes();
   const file = resolve(values.out ?? "src/ace-kit.generated.d.ts");
   await mkdir(dirname(file), { recursive: true });
   await writeFile(file, generateTypes(contentTypes, packageName, siteDomain));
-  console.log(`Wrote types for ${contentTypes.length} content type${contentTypes.length === 1 ? "" : "s"} to ${file}.`);
+  environment.out(
+    `Wrote types for ${contentTypes.length} content type${contentTypes.length === 1 ? "" : "s"} to ${file}.`,
+  );
   return 0;
 }
-
-main().then(
-  (code) => process.exit(code),
-  (error: unknown) => {
-    console.error(error instanceof Error ? error.message : error);
-    process.exit(1);
-  },
-);
