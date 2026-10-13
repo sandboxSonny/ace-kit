@@ -53,6 +53,7 @@ const about = await getEntry("pages", "about");
 | [Typed content](docs/typed-content.md)     | `ace-kit generate`                           |
 | [The command line](docs/command-line.md)   | `ace-kit login`, `logout`, `whoami`, `sync`  |
 | [Sections](docs/sections.md)               | `defineSection`, `AceSections`, the sync     |
+| [Dev sites](docs/dev-sites.md)             | your private copy of a site to build against |
 | [Rich text](docs/rich-text.md)             | The document format and how it is drawn      |
 | [API reference](docs/api-reference.md)     | Every export                                 |
 | [Releasing](docs/releasing.md)             | Versions, the changelog and publishing       |

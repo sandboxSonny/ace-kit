@@ -318,6 +318,14 @@ describe("ace-kit sync --automatic (what the dev server runs on a save)", () => 
     expect(await runCli(["sync", "--automatic"], allowed.environment)).toBe(0);
     expect(synced(allowed)).toHaveLength(1);
 
+    // The dev server points the process at the developer's own dev site, which is safe to sync to on a hosted CMS.
+    const onDevSite = await setup(
+      { "Hero.schema.ts": { default: hero } },
+      { apiUrl: hosted, routes, variables: { ACE_API_URL: hosted, ACE_DEV_SITE_ACTIVE: "1" } },
+    );
+    expect(await runCli(["sync", "--automatic"], onDevSite.environment)).toBe(0);
+    expect(synced(onDevSite)).toHaveLength(1);
+
     // Typing the command yourself is always allowed.
     const manual = await setup(
       { "Hero.schema.ts": { default: hero } },

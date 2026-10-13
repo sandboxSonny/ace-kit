@@ -4,6 +4,7 @@ import { loadEnv } from "vite";
 import type { Plugin, UserConfig } from "vite";
 
 import { packageName } from "../helpers/package-name";
+import { startDevSite } from "../dev-site/start-dev-site";
 import { startSectionSync } from "./section-sync";
 
 /**
@@ -22,7 +23,25 @@ import { startSectionSync } from "./section-sync";
 export default function ace(): Plugin {
   return {
     name: "ace-kit",
-    configureServer(server) {
+    async configureServer(server) {
+      // Against a hosted CMS, work on the developer's own copy of the site, not the live one.
+      const logger = server.config.logger;
+      const devSite = await startDevSite({
+        root: server.config.root,
+        mode: server.config.mode,
+        log: {
+          info: (text) => logger.info(`[ace-kit] ${text}`, { timestamp: true }),
+          warn: (text) => logger.warn(`[ace-kit] ${text}`, { timestamp: true }),
+        },
+      });
+      if (devSite) {
+        const tellCms = () => {
+          const address = server.httpServer?.address();
+          if (address && typeof address === "object") void devSite.setPreviewUrl(`http://localhost:${address.port}`);
+        };
+        if (server.httpServer && !server.httpServer.listening) server.httpServer.once("listening", tellCms);
+        else tellCms();
+      }
       startSectionSync(server);
     },
     config(config, { mode }) {

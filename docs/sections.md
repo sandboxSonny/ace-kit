@@ -89,7 +89,9 @@ While the dev server runs, Ace Kit watches for `*.schema.ts` files (in `src`) an
 
 You don't run anything. You do need to be signed in once: `npx ace-kit login` (see [the command line](./command-line.md)). The sync goes to the site named by `ACE_SITE_DOMAIN` at `ACE_API_URL`, the same settings the site reads its content with, and only an owner of that site (or a super admin) can sync to it.
 
-**Only a local CMS by default.** The CMS has no separate development copy of a site, so syncing on every save to a _hosted_ CMS could put a half-written field in front of editors on the live site. Sync therefore only runs automatically against `localhost`. To allow it against a hosted CMS, set `ACE_SYNC_SECTIONS=remote`; to turn it off, `ACE_SYNC_SECTIONS=false`. Running `npx ace-kit sync` yourself always works.
+**Your dev site, not the live one.** Against a _hosted_ CMS the dev server works on a [dev site](./dev-sites.md): your own private copy of the site, made for you the first time, so a half-written field never reaches editors or visitors of the live site. The sync goes there. Against a CMS on your own machine there is no need for one, and the sync goes to the site itself.
+
+**If there is no dev site to sync to** (you aren't signed in, or your account can't have one), automatic sync stays off against a hosted CMS, and the dev server says why. To allow it against the live site anyway, set `ACE_SYNC_SECTIONS=remote`; to turn it off, `ACE_SYNC_SECTIONS=false`. Running `npx ace-kit sync` yourself always syncs to the site `ACE_SITE_DOMAIN` names, which is how a change reaches the live site: deploy first, then run it.
 
 **Nothing is deleted, and a partial picture is never sent.** The CMS treats what is sent as the whole list. A section, block or field you take out of your code is kept there, hidden, so the content already written in it isn't lost (put it back and it returns). A field changing kind (say `text` to `number`) is refused, because its saved values are of the old kind: use a new handle. If any schema file can't be loaded, or none are found, **nothing is synced**; the error says which file and why.
 
@@ -99,4 +101,4 @@ You don't run anything. You do need to be signed in once: `npx ace-kit login` (s
 
 ## What the CMS needs
 
-An API with sections (its migration 00019) and command-line sign-in (00020).
+An API with sections (its migration 00019), command-line sign-in (00020) and, for dev sites, 00022.

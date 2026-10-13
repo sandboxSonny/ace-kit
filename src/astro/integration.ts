@@ -1,6 +1,10 @@
 import { envField } from "astro/config";
 import type { AstroIntegration } from "astro";
 
+import { fileURLToPath } from "node:url";
+
+import { startDevSite } from "../dev-site/start-dev-site";
+import type { DevSiteSession } from "../dev-site/start-dev-site";
 import sectionSync from "../vite/section-sync";
 
 /**
@@ -21,10 +25,19 @@ import sectionSync from "../vite/section-sync";
  * | `ACE_PREVIEW_ADMIN_ORIGIN` | `http://localhost:5173` | where the CMS admin app runs (may frame the site)        |
  */
 export default function ace(): AstroIntegration {
+  let devSite: DevSiteSession | null = null;
   return {
     name: "ace-kit",
     hooks: {
-      "astro:config:setup": ({ updateConfig, addMiddleware }) => {
+      "astro:config:setup": async ({ command, config, logger, updateConfig, addMiddleware }) => {
+        // While the dev server runs against a hosted CMS, work on the developer's own copy of the site, not the live one.
+        if (command === "dev") {
+          devSite = await startDevSite({
+            root: fileURLToPath(config.root),
+            mode: "development",
+            log: { info: (text) => logger.info(text), warn: (text) => logger.warn(text) },
+          });
+        }
         updateConfig({
           env: {
             schema: {
@@ -43,6 +56,10 @@ export default function ace(): AstroIntegration {
           vite: { ssr: { noExternal: ["@sandboxsonny/ace-kit"] }, plugins: [sectionSync()] },
         });
         addMiddleware({ entrypoint: "@sandboxsonny/ace-kit/astro/middleware", order: "pre" });
+      },
+      "astro:server:start": async ({ address }) => {
+        // Tell the CMS where this dev server runs, so the live preview in its admin shows it.
+        if (devSite) await devSite.setPreviewUrl(`http://localhost:${address.port}`);
       },
     },
   };
