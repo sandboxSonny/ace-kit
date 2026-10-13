@@ -1,4 +1,8 @@
+import { readFileSync } from "node:fs";
+
 import { defineConfig } from "tsup";
+
+const packageJson = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string };
 
 // Each entry's declarations are built on their own, so each is a single file. That matters for `AceContentTypes`:
 // the types `ace-kit generate` writes add to it by declaration merging, which only works when the interface is
@@ -44,8 +48,9 @@ export default defineConfig([
   },
   {
     // The command line tool.
-    entry: { cli: "src/generate/cli.ts" },
+    entry: { cli: "src/cli/bin.ts" },
     format: ["esm"],
+    define: { __ACE_KIT_VERSION__: JSON.stringify(packageJson.version) },
     banner: { js: "#!/usr/bin/env node" },
     clean: false,
   },
