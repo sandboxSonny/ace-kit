@@ -69,6 +69,7 @@ Import them by file:
 ```astro
 ---
 import AceImage from "@sandboxsonny/ace-kit/astro/AceImage.astro";
+import AceLink from "@sandboxsonny/ace-kit/astro/AceLink.astro";
 import AceRichText from "@sandboxsonny/ace-kit/astro/AceRichText.astro";
 import AceTextArea from "@sandboxsonny/ace-kit/astro/AceTextArea.astro";
 import AceMenu from "@sandboxsonny/ace-kit/astro/AceMenu.astro";
@@ -78,11 +79,13 @@ import AcePreviewRefresh from "@sandboxsonny/ace-kit/astro/AcePreviewRefresh.ast
 <AceMenu handle="main-menu" />
 <AceImage image={entry.values.hero} sizes="(min-width: 64rem) 64rem, 100vw" lazy={false} />
 <AceRichText document={entry.values.body} />
+<AceLink link={entry.values.button} class="button" />
 <AcePreviewRefresh />
 ```
 
 - **AceMenu** draws a whole menu as a `<nav>` with nested lists, marking the current page with `aria-current="page"`. Props: `handle`, `fallback`, `label` (what a screen reader calls it) and `class`. It is deliberately unstyled (`.ace-menu`, `.ace-menu__list`, `.ace-menu__sublist` are the hooks); to control the markup, use `getMenuLinks` and draw it yourself.
 - **AceImage** writes an `<img>` with `src`, `srcset`, `sizes`, `width`, `height`, `alt`, `loading` and `decoding`. Set `sizes` to how wide the image is shown, and `lazy={false}` for the image at the top of the page.
+- **AceLink** draws a link field as an `<a>` with the editor's words (or the address when there are none; put your own words in the slot to replace them). Nothing is drawn if the address can't be trusted, so check for a missing link yourself if you need a fallback. A date field is plain text: `formatAceDate(entry.values.published, { locale: "en-GB" })` gives "13 October 2026", and `<time datetime={entry.values.published}>` takes the raw value.
 - **AceRichText** draws a rich text field as HTML. It outputs bare elements (`h2`, `p`, `ul`, `a`...); style them from a wrapping element. Astro scopes styles, so reach them with `:global`, e.g. `.rich-text :global(h2) { ... }`.
 - **AceTextArea** draws a Textarea field (plain text): `multiline` (the default) makes paragraphs of blocks and a `<br>` of a new line; `multiline={false}` is one line of text with no element around it.
 - **AcePreviewRefresh** goes once in your layout. It does nothing unless the page was opened by the CMS's editor.

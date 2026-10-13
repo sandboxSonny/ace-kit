@@ -29,6 +29,13 @@ Everything below is exported from `@sandboxsonny/ace-kit` unless a path is given
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `imageAttributes(image, { sizes, lazy? })` | The attributes for an `<img>`: `src`, `srcSet`, `sizes`, `width`, `height`, `alt`, `loading`, `decoding`, `fetchPriority`. |
 
+## Links and dates
+
+|                                |                                                                                                                                                                                                                                                                                   |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `linkAttributes(link)`         | What to draw for a link field: `{ href, label }` (`label` is `null` when the editor gave no words), or `null` if the address can't be trusted.                                                                                                                                    |
+| `formatAceDate(date, format?)` | A date field's day (`"2026-10-13"`) as words, in the language asked for (`{ locale: "en-GB" }`), or `null` if it isn't a real day. Takes the options of `Intl.DateTimeFormat`; the default is `dateStyle: "long"`. A day has no time of day, so it never shifts with a time zone. |
+
 ## Menus
 
 |                                            |                                                                            |
@@ -60,7 +67,7 @@ Everything below is exported from `@sandboxsonny/ace-kit` unless a path is given
 
 ## Types
 
-`AceEntry<Values>`, `AceImageData`, `AceMenu`, `AceMenuItem`, `AceNavigationLink`, `AceRichTextDocument`, `AceRichTextNode`, `AceRichTextMark`, `AceContentTypeSchema`, `AceFieldSchema`, `AceAddress`, `AcePage`, `AceClient`, `AceClientOptions`, `AceImageAttributes`, `AceImageOptions`, and the ones generation fills in: `AceContentTypes`, `AceContentTypeHandle`, `AceValuesOf`.
+`AceEntry<Values>`, `AceImageData`, `AceLinkData`, `AceLinkAttributes`, `AceDateFormat`, `AceMenu`, `AceMenuItem`, `AceNavigationLink`, `AceRichTextDocument`, `AceRichTextNode`, `AceRichTextMark`, `AceContentTypeSchema`, `AceFieldSchema`, `AceAddress`, `AcePage`, `AceClient`, `AceClientOptions`, `AceImageAttributes`, `AceImageOptions`, and the ones generation fills in: `AceContentTypes`, `AceContentTypeHandle`, `AceValuesOf`.
 
 ## Astro
 
@@ -76,7 +83,7 @@ Everything below is exported from `@sandboxsonny/ace-kit` unless a path is given
 | `applyPage(response, page)`                                                               | Puts a page's status and headers on a response.                                                                                                           |
 | `ace`                                                                                     | The client these use.                                                                                                                                     |
 
-Components, by file: `AceImage.astro`, `AceRichText.astro`, `AceTextArea.astro`, `AceMenu.astro`, `AceNotice.astro`, `AcePreviewRefresh.astro`.
+Components, by file: `AceImage.astro`, `AceLink.astro`, `AceRichText.astro`, `AceTextArea.astro`, `AceMenu.astro`, `AceNotice.astro`, `AcePreviewRefresh.astro`.
 
 ## React Router 7
 
@@ -84,11 +91,11 @@ Components, by file: `AceImage.astro`, `AceRichText.astro`, `AceTextArea.astro`,
 
 `@sandboxsonny/ace-kit/react-router` (browser-safe):
 
-|                                                       |                                                                      |
-| ----------------------------------------------------- | -------------------------------------------------------------------- |
-| `AceRichText`, `AceTextArea`, `AceImage`, `AceNotice` | Components; rich text links are router links.                        |
-| `createMeta({ siteName? })`, `meta`                   | The route's `meta`.                                                  |
-| `useAceMenu()`, `useAcePreview()`                     | Read the header menu; keep a preview fresh. Need `createRootLoader`. |
+|                                                                  |                                                                                   |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `AceRichText`, `AceTextArea`, `AceImage`, `AceLink`, `AceNotice` | Components; rich text links and `AceLink` are router links for pages of the site. |
+| `createMeta({ siteName? })`, `meta`                              | The route's `meta`.                                                               |
+| `useAceMenu()`, `useAcePreview()`                                | Read the header menu; keep a preview fresh. Need `createRootLoader`.              |
 
 `@sandboxsonny/ace-kit/react-router/server` (server only):
 
@@ -102,4 +109,4 @@ Components, by file: `AceImage.astro`, `AceRichText.astro`, `AceTextArea.astro`,
 
 ## React (`@sandboxsonny/ace-kit/react`)
 
-`AceImage`, `AceRichText` (with `link`), `usePreviewRefresh(adminOrigin, refresh?)`.
+`AceImage`, `AceLink` (with `as`), `AceRichText` (with `link`), `usePreviewRefresh(adminOrigin, refresh?)`.

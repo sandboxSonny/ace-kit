@@ -2,7 +2,7 @@
 export type AceFieldSchema = {
   handle: string;
   label: string;
-  /** `text`, `textarea`, `select`, `number`, `checkbox`, `image` or `richtext`. */
+  /** `text`, `textarea`, `select`, `number`, `checkbox`, `image`, `richtext`, `date` or `link`. */
   component_key: string;
   config: { required?: boolean; options?: string[] } | null;
 };

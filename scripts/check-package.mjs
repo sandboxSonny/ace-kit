@@ -48,6 +48,7 @@ for (const required of [
   "dist/cli.js",
   "dist/preview-script.js",
   "astro/AceImage.astro",
+  "astro/AceLink.astro",
   "astro/AceRichText.astro",
   "astro/AcePreviewRefresh.astro",
 ]) {

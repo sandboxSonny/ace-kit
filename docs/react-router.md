@@ -93,6 +93,7 @@ export default function App() {
 From `@sandboxsonny/ace-kit/react-router` (these are safe in the browser):
 
 - **AceRichText** draws a rich text field. Links to pages of this site are router `Link`s, so navigating doesn't reload the page. It renders bare elements; style them from a wrapper.
+- **AceLink** draws a link field. A link to a page of this site is a router `Link`; any other is a plain `<a>`. It shows the editor's words (or the address), or your children instead, and draws nothing for an address that can't be trusted. Dates are text: format them with `formatAceDate` from `@sandboxsonny/ace-kit`.
 - **AceTextArea** draws a Textarea field (plain text): `multiline` (the default) makes paragraphs and line breaks, `multiline={false}` is one line of text.
 - **AceImage** is an `<img>` with `src`, `srcset`, `sizes`, size and alt text. Set `sizes` to how wide it is shown, and `lazy={false}` for the image at the top of the page.
 - **AceNotice** is the heading and message for a page that isn't an entry. Give it a `className`.

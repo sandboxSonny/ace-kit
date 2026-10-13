@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isInternalPath, linkAddress } from "./links";
+import { isInternalPath, linkAddress, linkAttributes } from "./links";
 
 describe("isInternalPath", () => {
   it("is true for paths on this site", () => {
@@ -31,6 +31,31 @@ describe("linkAddress", () => {
   it("refuses anything that could run a script or leave the page unexpectedly", () => {
     for (const address of ["javascript:alert(1)", "data:text/html,x", "//evil.example", "/a b", "about"]) {
       expect(linkAddress(address), address).toBeNull();
+    }
+  });
+});
+
+describe("linkAttributes", () => {
+  it("gives where a link field goes and its words, or no words when the editor gave none", () => {
+    expect(linkAttributes({ href: "/pages/about", label: "About us" })).toEqual({
+      href: "/pages/about",
+      label: "About us",
+    });
+    expect(linkAttributes({ href: "https://example.com" })).toEqual({ href: "https://example.com", label: null });
+    expect(linkAttributes({ href: "https://example.com", label: "" })).toEqual({
+      href: "https://example.com",
+      label: null,
+    });
+    expect(linkAttributes({ href: "mailto:hello@example.com" })?.href).toBe("mailto:hello@example.com");
+  });
+
+  it("sends the home entry's own address to /", () => {
+    expect(linkAttributes({ href: "/pages/home" })?.href).toBe("/");
+  });
+
+  it("gives nothing for an address that can't be trusted", () => {
+    for (const href of ["javascript:alert(1)", "data:text/html,hi", "//evil.example", "https://a b.com", "about", ""]) {
+      expect(linkAttributes({ href }), href).toBeNull();
     }
   });
 });

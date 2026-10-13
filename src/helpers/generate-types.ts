@@ -3,7 +3,10 @@ import type { AceContentTypeSchema, AceFieldSchema } from "../types/content-type
 const quote = (text: string) => JSON.stringify(text);
 
 /** The TypeScript type of what a field holds in an entry's values, and which type names it needs from the package. */
-function typeOfField(field: AceFieldSchema): { type: string; uses?: "AceImageData" | "AceRichTextDocument" } {
+function typeOfField(field: AceFieldSchema): {
+  type: string;
+  uses?: "AceImageData" | "AceLinkData" | "AceRichTextDocument";
+} {
   switch (field.component_key) {
     case "text":
     case "textarea":
@@ -20,6 +23,11 @@ function typeOfField(field: AceFieldSchema): { type: string; uses?: "AceImageDat
       return { type: "AceImageData", uses: "AceImageData" };
     case "richtext":
       return { type: "AceRichTextDocument", uses: "AceRichTextDocument" };
+    case "date":
+      // A day written YYYY-MM-DD, with no time of day. `formatAceDate` turns it into words.
+      return { type: "string" };
+    case "link":
+      return { type: "AceLinkData", uses: "AceLinkData" };
     default:
       // A kind of field this version of the package doesn't know yet.
       return { type: "unknown" };

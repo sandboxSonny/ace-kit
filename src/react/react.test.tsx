@@ -2,7 +2,7 @@
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AceImage, AceRichText, AceTextArea, usePreviewRefresh } from "./index";
+import { AceImage, AceLink, AceRichText, AceTextArea, usePreviewRefresh } from "./index";
 import type { AceRichTextDocument, AceRichTextNode } from "../types/rich-text";
 import type { AceImageData } from "../types/images";
 
@@ -183,5 +183,41 @@ describe("AceTextArea", () => {
     cleanup();
     expect(render(<AceTextArea value={undefined} />).container.innerHTML).toBe("");
     expect(render(<AceTextArea value={"  \n\n "} />).container.innerHTML).toBe("");
+  });
+});
+
+describe("AceLink", () => {
+  it("is a link with the editor's words", () => {
+    const { container } = render(<AceLink link={{ href: "/pages/about", label: "About us" }} className="button" />);
+    const link = container.querySelector("a")!;
+    expect(link.getAttribute("href")).toBe("/pages/about");
+    expect(link.textContent).toBe("About us");
+    expect(link.className).toBe("button");
+  });
+
+  it("shows the address when the editor gave no words, and your own words when you give them", () => {
+    const { container, rerender } = render(<AceLink link={{ href: "https://example.com" }} />);
+    expect(container.querySelector("a")!.textContent).toBe("https://example.com");
+    rerender(
+      <AceLink link={{ href: "https://example.com", label: "Ignored" }}>
+        <span>Buy now</span>
+      </AceLink>,
+    );
+    expect(container.querySelector("a")!.textContent).toBe("Buy now");
+  });
+
+  it("draws nothing for an address that can't be trusted", () => {
+    const { container } = render(<AceLink link={{ href: "javascript:alert(1)", label: "Click" }} />);
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("draws the link with the component you give, so a router can handle it", () => {
+    const Custom = ({ href, children }: { href: string; children: React.ReactNode }) => (
+      <a href={href} data-custom="yes">
+        {children}
+      </a>
+    );
+    const { container } = render(<AceLink link={{ href: "/pages/about", label: "About" }} as={Custom} />);
+    expect(container.querySelector("a")!.getAttribute("data-custom")).toBe("yes");
   });
 });
