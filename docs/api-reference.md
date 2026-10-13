@@ -36,6 +36,17 @@ Everything below is exported from `@sandboxsonny/ace-kit` unless a path is given
 | `linkAttributes(link)`         | What to draw for a link field: `{ href, label }` (`label` is `null` when the editor gave no words), or `null` if the address can't be trusted.                                                                                                                                    |
 | `formatAceDate(date, format?)` | A date field's day (`"2026-10-13"`) as words, in the language asked for (`{ locale: "en-GB" }`), or `null` if it isn't a real day. Takes the options of `Intl.DateTimeFormat`; the default is `dateStyle: "long"`. A day has no time of day, so it never shifts with a time zone. |
 
+## Sections
+
+|                                                     |                                                                                                                             |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `defineSection({ handle, name, fields?, blocks? })` | Describes a kind of section in a `*.schema.ts` file (see [Sections](./sections.md)). Returns it unchanged, for `SectionOf`. |
+| `SectionOf<typeof schema>`                          | The type of a section of that kind, as a website gets it: use it for the props of the component that draws it.              |
+| `checkSectionDefinition(definition, where?)`        | What is wrong with a definition, as a list of messages (empty if fine).                                                     |
+| `sectionTypesPayload(definitions)`                  | The body `PUT /sites/{id}/section-types` takes.                                                                             |
+
+Types: `AceSection`, `AceSectionBlock`, `SectionDefinition`, `SectionFieldDefinition`, `SectionFieldType`, `BlockDefinition`, `ValuesOfFields`. Components: `AceSections.astro`, and `AceSections` from `/react` and `/react-router`.
+
 ## Menus
 
 |                                            |                                                                            |
@@ -83,7 +94,7 @@ Everything below is exported from `@sandboxsonny/ace-kit` unless a path is given
 | `applyPage(response, page)`                                                               | Puts a page's status and headers on a response.                                                                                                           |
 | `ace`                                                                                     | The client these use.                                                                                                                                     |
 
-Components, by file: `AceImage.astro`, `AceLink.astro`, `AceRichText.astro`, `AceTextArea.astro`, `AceMenu.astro`, `AceNotice.astro`, `AcePreviewRefresh.astro`.
+Components, by file: `AceImage.astro`, `AceLink.astro`, `AceSections.astro`, `AceRichText.astro`, `AceTextArea.astro`, `AceMenu.astro`, `AceNotice.astro`, `AcePreviewRefresh.astro`.
 
 ## React Router 7
 
@@ -109,4 +120,4 @@ Components, by file: `AceImage.astro`, `AceLink.astro`, `AceRichText.astro`, `Ac
 
 ## React (`@sandboxsonny/ace-kit/react`)
 
-`AceImage`, `AceLink` (with `as`), `AceRichText` (with `link`), `usePreviewRefresh(adminOrigin, refresh?)`.
+`AceImage`, `AceLink` (with `as`), `AceSections` (with `fallback`), `AceRichText` (with `link`), `usePreviewRefresh(adminOrigin, refresh?)`.

@@ -45,6 +45,7 @@ cms.getEntry("pagez", "about"); // type error: no such content type
 | Rich text                        | `AceRichTextDocument`                                      |
 | Date                             | `string`, a day written `YYYY-MM-DD` (see `formatAceDate`) |
 | Link                             | `AceLinkData`: `{ href, label? }`                          |
+| Sections                         | `AceSection[]` (see [Sections](./sections.md))             |
 | a kind this version doesn't know | `unknown`                                                  |
 
 A field is optional unless it is marked required in the CMS. Before you generate, handles are plain `string` and values are `Record<string, unknown>`, so nothing breaks.

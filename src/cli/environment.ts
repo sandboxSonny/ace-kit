@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { hostname } from "node:os";
+import { pathToFileURL } from "node:url";
 
 import { chooseLoginStore } from "../auth/choose-store";
 import { createLastApiUrl, defaultLastApiUrlFile } from "../auth/last-api-url";
@@ -20,6 +21,10 @@ export type CliEnvironment = {
   fetchImplementation: typeof fetch;
   sleep: (milliseconds: number) => Promise<void>;
   now: () => number;
+  /** The folder the command runs in: where a site's own files are. */
+  workingDirectory: string;
+  /** Loads a JavaScript or TypeScript file the site wrote and returns its exports. */
+  importModule: (path: string) => Promise<unknown>;
   /** Opens a web page in the person's browser, if it can. */
   openBrowser: (address: string) => Promise<void>;
   /** Where logins are kept between commands. */
@@ -68,6 +73,24 @@ async function openBrowser(platform: NodeJS.Platform, address: string): Promise<
   });
 }
 
+/**
+ * Loads one of the site's own files. TypeScript runs as it is on Node 22.18 and newer, which is why a schema file may
+ * be a .ts file; on an older Node the error says so.
+ */
+async function importModule(path: string): Promise<unknown> {
+  try {
+    return await import(pathToFileURL(path).href);
+  } catch (error) {
+    if ((error as { code?: string }).code === "ERR_UNKNOWN_FILE_EXTENSION") {
+      throw new Error(
+        "this version of Node can't run TypeScript files. Use Node 22.18 or newer, or write the schema in .js.",
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+}
+
 /** The real thing: the process's own settings, console, clock, network and keychain. */
 export async function createRealEnvironment(): Promise<CliEnvironment> {
   // Settings may be in a .env file in the folder the command runs in (variables already set win).
@@ -88,6 +111,8 @@ export async function createRealEnvironment(): Promise<CliEnvironment> {
     fetchImplementation: (input, init) => fetch(input, init),
     sleep: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
     now: Date.now,
+    workingDirectory: process.cwd(),
+    importModule,
     openBrowser: (address) => openBrowser(platform, address),
     store: await chooseLoginStore({ platform, variables, run: runCommand }),
     lastApiUrl: createLastApiUrl(defaultLastApiUrlFile(variables, platform)),

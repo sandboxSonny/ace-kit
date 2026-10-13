@@ -8,6 +8,17 @@ export { AcePreviewExpiredError, AceUnavailableError } from "./client/errors";
 export { addressFromPath, homeAddress, isHomeAddress, pathOfAddress, visitablePath } from "./helpers/addressing";
 export { imageAttributes } from "./helpers/images";
 export type { AceImageAttributes, AceImageOptions } from "./helpers/images";
+export { defineSection } from "./sections/define-section";
+export type {
+  BlockDefinition,
+  SectionDefinition,
+  SectionFieldDefinition,
+  SectionFieldType,
+  SectionOf,
+  ValuesOfFields,
+} from "./sections/define-section";
+export { checkSectionDefinition, sectionTypesPayload } from "./sections/payload";
+export type { SectionTypesPayload } from "./sections/payload";
 export { formatAceDate } from "./helpers/dates";
 export type { AceDateFormat } from "./helpers/dates";
 export { isInternalPath, linkAddress, linkAttributes } from "./helpers/links";
@@ -37,5 +48,6 @@ export type { AceContentTypeHandle, AceContentTypes, AceEntry, AceValuesOf } fro
 export type { AceImageData } from "./types/images";
 export type { AceLinkData } from "./types/links";
 export type { AceMenu, AceMenuItem, AceNavigationLink } from "./types/menus";
+export type { AceSection, AceSectionBlock } from "./types/sections";
 export type { AcePage } from "./types/page";
 export type { AceRichTextDocument, AceRichTextMark, AceRichTextNode } from "./types/rich-text";
