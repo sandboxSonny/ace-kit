@@ -22,20 +22,25 @@ where nobody can approve a login in a browser, set ACE_TOKEN instead.
 
 const requestTimeoutMilliseconds = 15_000;
 
-/** Reads --api-url or ACE_API_URL. Returns null after saying what is wrong. */
-function readApiUrl(
+/**
+ * Reads --api-url, then ACE_API_URL, then the address last signed in to. Returns null after saying what is
+ * wrong.
+ */
+async function readApiUrl(
   commandArguments: string[],
   environment: CliEnvironment,
-): { apiUrl: string } | { help: true } | null {
+): Promise<{ apiUrl: string } | { help: true } | null> {
   const { values } = parseArgs({
     // eslint-disable-next-line id-denylist -- "args" is the name node's parseArgs gives this option.
     args: commandArguments,
     options: { "api-url": { type: "string" }, help: { type: "boolean" } },
   });
   if (values.help) return { help: true };
-  const address = values["api-url"] ?? environment.variables.ACE_API_URL;
+  const address = values["api-url"] ?? environment.variables.ACE_API_URL ?? (await environment.lastApiUrl.read());
   if (!address) {
-    environment.error("Give the API address: --api-url, or ACE_API_URL in the environment or a .env file.");
+    environment.error(
+      "Give the API address: --api-url, or ACE_API_URL in the environment or a .env file. (Once you have signed in, that address is remembered.)",
+    );
     return null;
   }
   try {
@@ -59,7 +64,7 @@ function webAddress(address: string): string | null {
 const isLocal = (apiUrl: string) => ["localhost", "127.0.0.1", "[::1]"].includes(new URL(apiUrl).hostname);
 
 export async function loginCommand(commandArguments: string[], environment: CliEnvironment): Promise<number> {
-  const read = readApiUrl(commandArguments, environment);
+  const read = await readApiUrl(commandArguments, environment);
   if (!read) return 1;
   if ("help" in read) {
     environment.out(loginUsage);
@@ -100,6 +105,8 @@ export async function loginCommand(commandArguments: string[], environment: CliE
       now: environment.now,
     });
     await environment.store.write(apiUrl, login);
+    // Remembered so `whoami` and `logout` know where to look. If it can't be written, nothing is lost but the convenience.
+    await environment.lastApiUrl.write(apiUrl).catch(() => undefined);
     environment.out(`\nSigned in as ${login.email}. The login is kept in ${environment.store.description}.`);
     return 0;
   } catch (error) {
@@ -109,7 +116,7 @@ export async function loginCommand(commandArguments: string[], environment: CliE
 }
 
 export async function logoutCommand(commandArguments: string[], environment: CliEnvironment): Promise<number> {
-  const read = readApiUrl(commandArguments, environment);
+  const read = await readApiUrl(commandArguments, environment);
   if (!read) return 1;
   if ("help" in read) {
     environment.out(loginUsage);
@@ -143,7 +150,7 @@ export async function logoutCommand(commandArguments: string[], environment: Cli
 }
 
 export async function whoamiCommand(commandArguments: string[], environment: CliEnvironment): Promise<number> {
-  const read = readApiUrl(commandArguments, environment);
+  const read = await readApiUrl(commandArguments, environment);
   if (!read) return 1;
   if ("help" in read) {
     environment.out(loginUsage);

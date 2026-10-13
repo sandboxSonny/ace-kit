@@ -33,6 +33,7 @@ function fakeEnvironment(routes: Routes = {}, overrides: Partial<CliEnvironment>
   const errors: string[] = [];
   const requests: { address: string; init?: RequestInit }[] = [];
   const store = memoryStore();
+  let remembered: string | null = null;
   let current = Date.parse("2026-10-13T12:00:00Z");
   const environment: CliEnvironment = {
     variables: {},
@@ -54,9 +55,23 @@ function fakeEnvironment(routes: Routes = {}, overrides: Partial<CliEnvironment>
     now: () => current,
     openBrowser: vi.fn(async () => undefined),
     store,
+    lastApiUrl: {
+      read: async () => remembered,
+      write: async (apiUrl) => {
+        remembered = apiUrl;
+      },
+    },
     ...overrides,
   };
-  return { environment, output, errors, requests, store };
+  return {
+    environment,
+    output,
+    errors,
+    requests,
+    store,
+    remembered: () => remembered,
+    remember: (apiUrl: string) => (remembered = apiUrl),
+  };
 }
 
 const api = "http://localhost:8080";
@@ -178,6 +193,64 @@ describe("ace-kit login", () => {
     });
     expect(await runCli(["login", "--api-url", api], environment)).toBe(1);
     expect(errors.join()).toContain("isn't set up on this server");
+  });
+});
+
+describe("remembering the API address", () => {
+  it("remembers the address a login was made to, and whoami and logout use it with no address given", async () => {
+    const { environment, output, remembered } = fakeEnvironment({
+      ...loginRoutes(approved),
+      [`GET ${api}/auth/me`]: () => json({ email: "sam@example.com" }),
+      [`POST ${api}/auth/logout`]: () => new Response(null, { status: 204 }),
+    });
+    expect(await runCli(["login", "--api-url", "HTTP://localhost:8080/"], environment)).toBe(0);
+    expect(remembered()).toBe(api);
+
+    expect(await runCli(["whoami"], environment)).toBe(0);
+    expect(output.join("\n")).toContain(`Signed in to ${api} as sam@example.com`);
+    expect(await runCli(["logout"], environment)).toBe(0);
+    expect(output.join("\n")).toContain(`Signed out of ${api}.`);
+  });
+
+  it("lets login use it too, to sign in again", async () => {
+    const { environment, remember, store } = fakeEnvironment(loginRoutes(approved));
+    remember(api);
+    expect(await runCli(["login"], environment)).toBe(0);
+    expect(Object.keys(store.items)).toEqual([api]);
+  });
+
+  it("prefers an address that is given: first --api-url, then ACE_API_URL, then the remembered one", async () => {
+    const other = "http://localhost:9090";
+    const routes: Routes = { [`GET ${other}/auth/me`]: () => json({ email: "other@example.com" }) };
+    const first = fakeEnvironment(routes, { variables: { ACE_API_URL: "http://localhost:1111" } });
+    first.remember(api);
+    first.store.items[other] = { token: "t", email: "other@example.com", expiresAt: "2027-01-01T00:00:00Z" };
+    expect(await runCli(["whoami", "--api-url", other], first.environment)).toBe(0);
+    expect(first.requests[0].address).toBe(`${other}/auth/me`);
+
+    const second = fakeEnvironment({}, { variables: { ACE_API_URL: other } });
+    second.remember(api);
+    second.store.items[other] = { token: "t", email: "other@example.com", expiresAt: "2027-01-01T00:00:00Z" };
+    second.environment.fetchImplementation = async (input) => {
+      second.requests.push({ address: String(input) });
+      return json({ email: "other@example.com" });
+    };
+    await runCli(["whoami"], second.environment);
+    expect(second.requests[0].address).toBe(`${other}/auth/me`);
+  });
+
+  it("does not remember an address when the login failed", async () => {
+    const { environment, remembered } = fakeEnvironment(loginRoutes({ status: "denied" }));
+    await runCli(["login", "--api-url", api], environment);
+    expect(remembered()).toBeNull();
+  });
+
+  it("still signs in when the address can't be remembered", async () => {
+    const { environment, store } = fakeEnvironment(loginRoutes(approved), {
+      lastApiUrl: { read: async () => null, write: async () => Promise.reject(new Error("read-only disk")) },
+    });
+    expect(await runCli(["login", "--api-url", api], environment)).toBe(0);
+    expect(store.items[api]?.token).toBe("the-session-token");
   });
 });
 

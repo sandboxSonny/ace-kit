@@ -2,6 +2,8 @@ import { spawn } from "node:child_process";
 import { hostname } from "node:os";
 
 import { chooseLoginStore } from "../auth/choose-store";
+import { createLastApiUrl, defaultLastApiUrlFile } from "../auth/last-api-url";
+import type { LastApiUrl } from "../auth/last-api-url";
 import type { CommandRunner } from "../auth/keychain-store";
 import type { LoginStore } from "../auth/login-store";
 import { aceKitVersion } from "./version";
@@ -22,6 +24,8 @@ export type CliEnvironment = {
   openBrowser: (address: string) => Promise<void>;
   /** Where logins are kept between commands. */
   store: LoginStore;
+  /** The API address last signed in to, used when no address is given. */
+  lastApiUrl: LastApiUrl;
 };
 
 /** Runs a program, writing `input` to its standard input, and reports how it ended. */
@@ -86,5 +90,6 @@ export async function createRealEnvironment(): Promise<CliEnvironment> {
     now: Date.now,
     openBrowser: (address) => openBrowser(platform, address),
     store: await chooseLoginStore({ platform, variables, run: runCommand }),
+    lastApiUrl: createLastApiUrl(defaultLastApiUrlFile(variables, platform)),
   };
 }

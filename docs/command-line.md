@@ -9,7 +9,7 @@ npx ace-kit logout     # sign out
 npx ace-kit generate   # write TypeScript types (see Typed content)
 ```
 
-Every command takes `--api-url`, or reads `ACE_API_URL` from the environment or a `.env` file in the folder you run it in.
+Every command takes `--api-url`, or reads `ACE_API_URL` from the environment or a `.env` file in the folder you run it in. Failing both, it uses the address you last signed in to (kept in a small file beside your logins), so after `ace-kit login --api-url …` you can simply run `ace-kit whoami` from anywhere.
 
 ## Signing in
 
