@@ -1,6 +1,8 @@
 import { envField } from "astro/config";
 import type { AstroIntegration } from "astro";
 
+import sectionSync from "../vite/section-sync";
+
 /**
  * The Astro integration. Add it once to `astro.config.mjs` and a site is wired up:
  *
@@ -8,7 +10,9 @@ import type { AstroIntegration } from "astro";
  *     export default defineConfig({ output: "server", integrations: [ace()] });
  *
  * It declares the three settings below, and lets the CMS's admin app (and only it) frame the site for live preview.
- * The settings are read when the server starts, not baked into the build, so one build runs anywhere.
+ * The settings are read when the server starts, not baked into the build, so one build runs anywhere. While the dev
+ * server runs it also syncs the site's section types (its `*.schema.ts` files) to the CMS whenever they change; see
+ * `ace-kit sync`.
  *
  * | Setting                    | Default                 | Meaning                                                  |
  * | -------------------------- | ----------------------- | -------------------------------------------------------- |
@@ -36,7 +40,7 @@ export default function ace(): AstroIntegration {
           },
           // The kit reads those settings through `astro:env`, which only Vite understands, so Vite must process the
           // kit itself rather than leave it to Node.
-          vite: { ssr: { noExternal: ["@sandboxsonny/ace-kit"] } },
+          vite: { ssr: { noExternal: ["@sandboxsonny/ace-kit"] }, plugins: [sectionSync()] },
         });
         addMiddleware({ entrypoint: "@sandboxsonny/ace-kit/astro/middleware", order: "pre" });
       },

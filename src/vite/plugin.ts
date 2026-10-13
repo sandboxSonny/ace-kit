@@ -4,6 +4,7 @@ import { loadEnv } from "vite";
 import type { Plugin, UserConfig } from "vite";
 
 import { packageName } from "../helpers/package-name";
+import { startSectionSync } from "./section-sync";
 
 /**
  * A Vite plugin for sites whose server code reads Ace Kit's settings (`ACE_API_URL`, `ACE_SITE_DOMAIN`,
@@ -12,7 +13,8 @@ import { packageName } from "../helpers/package-name";
  * development. This reads the `ACE_` variables from `.env` files into `process.env`, never replacing one that is
  * already set, and never exposing them to the browser. In production the host's environment is used as it is.
  * It also makes sure the site uses a single copy of React and React Router, in the app and in its tests: add it to
- * `vitest.config.ts` too if the site tests components that use the kit.
+ * `vitest.config.ts` too if the site tests components that use the kit. And while the dev server runs it syncs the
+ * site's section types (its `*.schema.ts` files) to the CMS whenever they change; see `ace-kit sync`.
  *
  *     // vite.config.ts
  *     export default defineConfig({ plugins: [ace(), reactRouter()] });
@@ -20,6 +22,9 @@ import { packageName } from "../helpers/package-name";
 export default function ace(): Plugin {
   return {
     name: "ace-kit",
+    configureServer(server) {
+      startSectionSync(server);
+    },
     config(config, { mode }) {
       const root = config.root ? resolve(config.root) : process.cwd();
       const fromFiles = loadEnv(mode, root, "ACE_");
