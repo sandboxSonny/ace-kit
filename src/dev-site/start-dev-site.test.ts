@@ -23,7 +23,7 @@ afterEach(() => {
   }
 });
 
-function setup(variables: Record<string, string>, loggedIn = true, put = json(dev, 201)) {
+function setup(variables: Record<string, string | undefined>, loggedIn = true, put = json(dev, 201)) {
   // Dev servers of a site's own tests skip all this; this test is about the real thing.
   delete process.env.VITEST;
   const requests: { address: string; method: string; body?: string }[] = [];
@@ -64,6 +64,29 @@ describe("startDevSite", () => {
     expect(created.messages.join("\n")).toMatch(
       /Made you a dev site.*live site is not touched|live site is not touched/s,
     );
+  });
+
+  it("takes the site's domain from the site setting (Astro's `site`) when ACE_SITE_DOMAIN is not set", async () => {
+    const created = setup({ ACE_SITE_DOMAIN: undefined });
+    const session = await startDevSite({
+      root: "/site",
+      mode: "development",
+      siteDomain: "acme.test",
+      log: created.log,
+      environment: created.environment,
+    });
+    expect(session?.domain).toBe("dev-3.acme.test");
+    // And ACE_SITE_DOMAIN, when it is set, wins over it.
+    const winning = setup({ ACE_SITE_DOMAIN: "acme.test" });
+    expect(
+      await startDevSite({
+        root: "/site",
+        mode: "development",
+        siteDomain: "other.test",
+        log: winning.log,
+        environment: winning.environment,
+      }),
+    ).not.toBeNull();
   });
 
   it("says it is reusing a dev site it found", async () => {

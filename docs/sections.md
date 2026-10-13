@@ -87,7 +87,7 @@ While the dev server runs, Ace Kit watches for `*.schema.ts` files (in `src`) an
 10:41:07 [ace-kit] Synced 3 section types (faq, gallery, hero) to localhost (http://localhost:8080).
 ```
 
-You don't run anything. You do need to be signed in once: `npx ace-kit login` (see [the command line](./command-line.md)). The sync goes to the site named by `ACE_SITE_DOMAIN` at `ACE_API_URL`, the same settings the site reads its content with, and only an owner of that site (or a super admin) can sync to it.
+You don't run anything. You do need to be signed in once: `npx ace-kit login` (see [the command line](./command-line.md)). The sync goes to the site the dev server is working on, the same one it reads its content from, and only an owner of that site (or a super admin) can sync to it.
 
 **Your dev site, not the live one.** Against a _hosted_ CMS the dev server works on a [dev site](./dev-sites.md): your own private copy of the site, made for you the first time, so a half-written field never reaches editors or visitors of the live site. The sync goes there. Against a CMS on your own machine there is no need for one, and the sync goes to the site itself.
 

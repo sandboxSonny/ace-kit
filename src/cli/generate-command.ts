@@ -5,16 +5,17 @@ import { parseArgs } from "node:util";
 import { createAceClient } from "../client/create-client";
 import { generateTypes } from "../helpers/generate-types";
 import { packageName } from "../helpers/package-name";
+import { domainFromSite, hostedApiUrl } from "../helpers/platform";
 import type { CliEnvironment } from "./environment";
 
 export const generateUsage = `ace-kit generate: write TypeScript types for your CMS Ace content types.
 
 Usage:
-  ace-kit generate [--api-url <address>] [--domain <domain>] [--out <file>]
+  ace-kit generate [--site <domain>] [--api-url <address>] [--out <file>]
 
 Options:
-  --api-url   Where the CMS Ace API lives (or set ACE_API_URL, in the environment or a .env file).
-  --domain    The domain your site has in the CMS (or set ACE_SITE_DOMAIN).
+  --site      The domain your site has in the CMS, e.g. example.com (or set ACE_SITE_DOMAIN). --domain means the same.
+  --api-url   Where the CMS Ace API lives (or set ACE_API_URL). Only for a CMS on your own machine.
   --out       Where to write the types (default: src/ace-kit.generated.d.ts).
   --help      Show this message.
 `;
@@ -25,6 +26,7 @@ export async function generateCommand(commandArguments: string[], environment: C
     args: commandArguments,
     options: {
       "api-url": { type: "string" },
+      site: { type: "string" },
       domain: { type: "string" },
       out: { type: "string" },
       help: { type: "boolean" },
@@ -35,14 +37,13 @@ export async function generateCommand(commandArguments: string[], environment: C
     return 0;
   }
 
-  const apiUrl = values["api-url"] ?? environment.variables.ACE_API_URL;
-  const siteDomain = values.domain ?? environment.variables.ACE_SITE_DOMAIN;
-  if (!apiUrl || !siteDomain) {
-    environment.error(
-      "Give the API address and the site's domain: --api-url and --domain, or ACE_API_URL and ACE_SITE_DOMAIN.",
-    );
+  const apiUrl = values["api-url"] ?? environment.variables.ACE_API_URL ?? hostedApiUrl;
+  const given = values.site ?? values.domain ?? environment.variables.ACE_SITE_DOMAIN;
+  if (!given) {
+    environment.error("Give the site's domain: --site, or ACE_SITE_DOMAIN.");
     return 1;
   }
+  const siteDomain = domainFromSite(given);
 
   const client = createAceClient({
     apiUrl,

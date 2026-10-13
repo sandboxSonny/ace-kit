@@ -99,34 +99,52 @@ describe("getMenuLinks", () => {
 });
 
 describe("the integration", () => {
-  function setUp() {
+  async function setUp(site?: string) {
     const updates: Record<string, unknown>[] = [];
     const middleware: unknown[] = [];
-    const hook = integration().hooks["astro:config:setup"] as (parameters: unknown) => void;
-    hook({
+    const hook = integration().hooks["astro:config:setup"] as (parameters: unknown) => Promise<void>;
+    await hook({
+      command: "build",
+      config: { site, root: new URL("file:///site/") },
+      logger: { info: () => undefined, warn: () => undefined },
       updateConfig: (update: Record<string, unknown>) => updates.push(update),
       addMiddleware: (added: unknown) => middleware.push(added),
     });
     return { updates, middleware };
   }
 
-  it("declares the three settings as secrets, so they are read at runtime", () => {
-    const [update] = setUp().updates as {
+  it("declares the three settings as secrets, so they are read at runtime", async () => {
+    const [update] = (await setUp()).updates as {
       env: { schema: Record<string, { access: string; context: string; default: string }> };
     }[];
     expect(Object.keys(update.env.schema)).toEqual(["ACE_API_URL", "ACE_SITE_DOMAIN", "ACE_PREVIEW_ADMIN_ORIGIN"]);
     for (const setting of Object.values(update.env.schema)) {
       expect([setting.access, setting.context]).toEqual(["secret", "server"]);
     }
-    expect(update.env.schema.ACE_API_URL.default).toBe("http://localhost:8080");
+    // The hosted platform is the default: a site only says where it is when the CMS is on its own machine.
+    expect(update.env.schema.ACE_API_URL.default).toBe("https://api.ace-cms.co.uk");
+    expect(update.env.schema.ACE_PREVIEW_ADMIN_ORIGIN.default).toBe("https://app.ace-cms.co.uk");
+    expect(update.env.schema.ACE_SITE_DOMAIN.default).toBe("localhost");
   });
 
-  it("has Vite process the kit, because it reads its settings through astro:env", () => {
-    const [update] = setUp().updates as { vite: { ssr: { noExternal: string[] } } }[];
+  it("takes the site's domain from Astro's own `site` setting, written as a web address", async () => {
+    for (const site of [
+      "https://example.adamsdevelopment.co.uk",
+      "https://Example.adamsdevelopment.co.uk:8443/blog/",
+    ]) {
+      const [update] = (await setUp(site)).updates as { env: { schema: Record<string, { default: string }> } }[];
+      expect(update.env.schema.ACE_SITE_DOMAIN.default, site).toBe("example.adamsdevelopment.co.uk");
+    }
+  });
+
+  it("has Vite process the kit, because it reads its settings through astro:env", async () => {
+    const [update] = (await setUp()).updates as { vite: { ssr: { noExternal: string[] } } }[];
     expect(update.vite.ssr.noExternal).toEqual(["@sandboxsonny/ace-kit"]);
   });
 
-  it("registers the framing middleware before the site's own", () => {
-    expect(setUp().middleware).toEqual([{ entrypoint: "@sandboxsonny/ace-kit/astro/middleware", order: "pre" }]);
+  it("registers the framing middleware before the site's own", async () => {
+    expect((await setUp()).middleware).toEqual([
+      { entrypoint: "@sandboxsonny/ace-kit/astro/middleware", order: "pre" },
+    ]);
   });
 });

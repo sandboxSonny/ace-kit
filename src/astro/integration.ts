@@ -3,6 +3,7 @@ import type { AstroIntegration } from "astro";
 
 import { fileURLToPath } from "node:url";
 
+import { domainFromSite, hostedAdminOrigin, hostedApiUrl } from "../helpers/platform";
 import { startDevSite } from "../dev-site/start-dev-site";
 import type { DevSiteSession } from "../dev-site/start-dev-site";
 import sectionSync from "../vite/section-sync";
@@ -20,9 +21,9 @@ import sectionSync from "../vite/section-sync";
  *
  * | Setting                    | Default                 | Meaning                                                  |
  * | -------------------------- | ----------------------- | -------------------------------------------------------- |
- * | `ACE_API_URL`              | `http://localhost:8080` | where the CMS Ace API lives                              |
- * | `ACE_SITE_DOMAIN`          | `localhost`             | the domain this site has in the CMS                      |
- * | `ACE_PREVIEW_ADMIN_ORIGIN` | `http://localhost:5173` | where the CMS admin app runs (may frame the site)        |
+ * | `ACE_API_URL`              | `https://api.ace-cms.co.uk` | where the CMS Ace API lives (set it for a CMS on your machine) |
+ * | `ACE_SITE_DOMAIN`          | the host of Astro's `site` setting, else `localhost` | the domain this site has in the CMS |
+ * | `ACE_PREVIEW_ADMIN_ORIGIN` | `https://app.ace-cms.co.uk` | where the CMS admin app runs (may frame the site)  |
  */
 export default function ace(): AstroIntegration {
   let devSite: DevSiteSession | null = null;
@@ -31,10 +32,14 @@ export default function ace(): AstroIntegration {
     hooks: {
       "astro:config:setup": async ({ command, config, logger, updateConfig, addMiddleware }) => {
         // While the dev server runs against a hosted CMS, work on the developer's own copy of the site, not the live one.
+        // The site's domain in the CMS: ACE_SITE_DOMAIN if it is set, otherwise the host of Astro's own `site` setting
+        // (so `site: "https://example.com"` in the config, or `astro dev --site https://example.com`, is enough).
+        const siteDomain = config.site ? domainFromSite(config.site) : "localhost";
         if (command === "dev") {
           devSite = await startDevSite({
             root: fileURLToPath(config.root),
             mode: "development",
+            siteDomain,
             log: { info: (text) => logger.info(text), warn: (text) => logger.warn(text) },
           });
         }
@@ -42,12 +47,12 @@ export default function ace(): AstroIntegration {
           env: {
             schema: {
               // "secret" only because Astro reads secrets when the server starts, while "public" values are baked into the build.
-              ACE_API_URL: envField.string({ context: "server", access: "secret", default: "http://localhost:8080" }),
-              ACE_SITE_DOMAIN: envField.string({ context: "server", access: "secret", default: "localhost" }),
+              ACE_API_URL: envField.string({ context: "server", access: "secret", default: hostedApiUrl }),
+              ACE_SITE_DOMAIN: envField.string({ context: "server", access: "secret", default: siteDomain }),
               ACE_PREVIEW_ADMIN_ORIGIN: envField.string({
                 context: "server",
                 access: "secret",
-                default: "http://localhost:5173",
+                default: hostedAdminOrigin,
               }),
             },
           },

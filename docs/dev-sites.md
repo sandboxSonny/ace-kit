@@ -6,7 +6,7 @@ When your site's dev server works against a hosted CMS, it doesn't touch the liv
 
 On start, the dev server (the Astro integration, or the `ace()` Vite plugin on React Router):
 
-1. checks you are signed in (`npx ace-kit login`), and finds the site `ACE_SITE_DOMAIN` names;
+1. checks you are signed in (`npx ace-kit login`), and finds the site you are working on (Astro's `site` setting, or `ACE_SITE_DOMAIN`);
 2. asks the CMS for your dev site of it, which the CMS makes the first time as a copy of the live site: its content types, section types, menus and the **text** of its entries, with every link between entries pointing at the copy. Images are not copied yet, so image fields start empty;
 3. points the site at it: `ACE_SITE_DOMAIN` becomes the dev site's domain for as long as the dev server runs (your `.env` is not changed), so the site reads its content from the dev site, and section sync goes there;
 4. tells the CMS where the dev server is running, so the live preview in the admin app shows your dev server.
@@ -23,7 +23,7 @@ Partner accounts and super admins, for sites they own. Ask for a partner account
 
 ## Going to the live site
 
-A dev site is never merged into the live site. When your change is ready, deploy your site, then run `npx ace-kit sync` against the live site (`ACE_SITE_DOMAIN` set to the live domain, as in your `.env`). Deploy first: the live CMS then has the section types the deployed code expects.
+A dev site is never merged into the live site. When your change is ready, deploy your site, then run `npx ace-kit sync` against the live site (`--site www.example.com`, or `ACE_SITE_DOMAIN`). Deploy first: the live CMS then has the section types the deployed code expects.
 
 ## Settings
 

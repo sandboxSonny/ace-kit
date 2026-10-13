@@ -30,7 +30,12 @@ const faq = defineSection({
 /** Makes the schema files (empty: the test says what each one exports) and returns an environment that sees them. */
 async function setup(
   schemas: Record<string, unknown>,
-  options: { routes?: Routes; variables?: Record<string, string>; signedIn?: boolean; apiUrl?: string } = {},
+  options: {
+    routes?: Routes;
+    variables?: Record<string, string | undefined>;
+    signedIn?: boolean;
+    apiUrl?: string;
+  } = {},
 ) {
   for (const name of Object.keys(schemas)) {
     await mkdir(join(root, "src"), { recursive: true });
@@ -49,7 +54,8 @@ async function setup(
       }),
   };
   const created = fakeEnvironment(routes, {
-    variables: options.variables ?? {},
+    // Most tests talk to a CMS on this machine, which a site says by setting ACE_API_URL.
+    variables: { ACE_API_URL: apiUrl, ...options.variables },
     workingDirectory: root,
     importModule: async (path) => {
       const module = schemas[basename(path)];
@@ -148,9 +154,13 @@ describe("ace-kit sync", () => {
   });
 
   it("uses the same defaults as the Astro integration, and settings and options in that order", async () => {
-    const defaults = await setup({ "Hero.schema.ts": { default: hero } });
+    // With no setting at all it is the hosted CMS Ace, and the site "localhost".
+    const defaults = await setup(
+      { "Hero.schema.ts": { default: hero } },
+      { apiUrl: "https://api.ace-cms.co.uk", variables: { ACE_API_URL: undefined } },
+    );
     await runCli(["sync"], defaults.environment);
-    expect(defaults.requests[0].address).toBe("http://localhost:8080/sites");
+    expect(defaults.requests[0].address).toBe("https://api.ace-cms.co.uk/sites");
 
     const fromSettings = await setup(
       { "Hero.schema.ts": { default: hero } },
@@ -183,18 +193,39 @@ describe("ace-kit sync", () => {
     ).toBe(0);
   });
 
+  it("names the site with --site, as a domain or a web address, and --domain still works", async () => {
+    for (const flag of [
+      ["--site", "example.test"],
+      ["--site", "https://Example.test/about"],
+      ["--domain", "example.test"],
+    ]) {
+      const created = await setup(
+        { "Hero.schema.ts": { default: hero } },
+        {
+          routes: {
+            "GET http://localhost:8080/sites": () => json([{ id: 2, domain: "example.test" }]),
+            "PUT http://localhost:8080/sites/2/section-types": () =>
+              json({ sections: [{ handle: "hero", name: "Hero" }] }),
+          },
+        },
+      );
+      expect(await runCli(["sync", ...flag], created.environment), flag.join(" ")).toBe(0);
+      expect(created.output.join()).toContain("to example.test");
+    }
+  });
+
   it("does not use the address last signed in to, which may be a hosted CMS the site isn't pointed at", async () => {
     const created = await setup({ "Hero.schema.ts": { default: hero } });
-    created.environment.lastApiUrl = { read: async () => "https://api.ace-cms.co.uk", write: async () => undefined };
+    created.environment.lastApiUrl = { read: async () => "https://api.elsewhere.test", write: async () => undefined };
     // Signed in there too, so that using that address by mistake would really send something.
-    created.store.items["https://api.ace-cms.co.uk"] = {
+    created.store.items["https://api.elsewhere.test"] = {
       token: "production-token",
       email: "sam@example.com",
       expiresAt: "2027-01-01T00:00:00Z",
     };
     await runCli(["sync"], created.environment);
     expect(created.requests.length).toBeGreaterThan(0);
-    expect(created.requests.map((request) => request.address).join()).not.toContain("ace-cms.co.uk");
+    expect(created.requests.map((request) => request.address).join()).not.toContain("elsewhere.test");
   });
 
   it("looks in the folder it is told to", async () => {

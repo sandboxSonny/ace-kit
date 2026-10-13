@@ -52,7 +52,7 @@ describe("the settings", () => {
     expect((init.headers as Record<string, string>)["X-Forwarded-Host"]).toBe("site.example.test");
   });
 
-  it("have defaults for development", async () => {
+  it("default to the hosted CMS Ace", async () => {
     vi.stubEnv("ACE_API_URL", undefined as unknown as string);
     vi.stubEnv("ACE_SITE_DOMAIN", undefined as unknown as string);
     delete process.env.ACE_API_URL;
@@ -61,7 +61,7 @@ describe("the settings", () => {
     const { getEntry } = await server();
     await getEntry("pages", "about");
     const [address, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(address).toBe("http://localhost:8080/public/entries/about");
+    expect(address).toBe("https://api.ace-cms.co.uk/public/entries/about");
     expect((init.headers as Record<string, string>)["X-Ace-Site-Domain"]).toBe("localhost");
     expect((init.headers as Record<string, string>)["X-Forwarded-Host"]).toBe("localhost");
   });

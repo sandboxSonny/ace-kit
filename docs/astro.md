@@ -17,13 +17,19 @@ export default defineConfig({
 
 The integration declares three settings, adds the middleware that lets the CMS's admin app (and only it) frame the site for [live preview](./live-preview.md), and makes Vite process the kit. The settings are read when the server starts, not baked into the build, so one build runs anywhere:
 
-| Setting                    | Default                 | Meaning                                                   |
-| -------------------------- | ----------------------- | --------------------------------------------------------- |
-| `ACE_API_URL`              | `http://localhost:8080` | where the CMS Ace API lives                               |
-| `ACE_SITE_DOMAIN`          | `localhost`             | the domain this site has in the CMS (the port is ignored) |
-| `ACE_PREVIEW_ADMIN_ORIGIN` | `http://localhost:5173` | where the CMS admin app runs                              |
+| Setting                    | Default                                              | Meaning                                                   |
+| -------------------------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| `ACE_API_URL`              | `https://api.ace-cms.co.uk`                          | where the CMS Ace API lives                               |
+| `ACE_SITE_DOMAIN`          | the host of Astro's `site` setting, else `localhost` | the domain this site has in the CMS (the port is ignored) |
+| `ACE_PREVIEW_ADMIN_ORIGIN` | `https://app.ace-cms.co.uk`                          | where the CMS admin app runs                              |
 
-Put them in `.env` for development and in the environment for production.
+CMS Ace is a hosted platform, so a site normally sets none of these except its domain, and it does that with Astro's own `site` setting, which Astro needs for canonical addresses anyway:
+
+```js
+export default defineConfig({ site: "https://www.example.com", integrations: [ace()] });
+```
+
+To try a site without editing the config, `npm run dev -- --site https://www.example.com` does the same. `ACE_SITE_DOMAIN`, when set, wins. Set `ACE_API_URL` and `ACE_PREVIEW_ADMIN_ORIGIN` (in `.env`) only to use a CMS running on your own machine, for example `http://localhost:8080` and `http://localhost:5173`.
 
 ## Pages
 

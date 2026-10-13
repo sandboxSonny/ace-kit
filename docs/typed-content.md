@@ -3,16 +3,16 @@
 The kit can write TypeScript types for your site's content types, so `getEntry` and `getEntries` return the right shape and a change in the CMS shows up as a type error in your site.
 
 ```sh
-npx ace-kit generate --api-url http://localhost:8080 --domain localhost
+npx ace-kit generate --site www.example.com
 ```
 
 or with the settings in the environment:
 
 ```sh
-ACE_API_URL=http://localhost:8080 ACE_SITE_DOMAIN=localhost npx ace-kit generate
+ACE_SITE_DOMAIN=www.example.com npx ace-kit generate
 ```
 
-It reads `GET /public/content-types` (no login: it describes field names and kinds, never entries) and writes `src/ace-kit.generated.d.ts` (change it with `--out`). Make sure the file is inside your `tsconfig` `include`. Commit it, and run the command again whenever content types change (a good moment is a CI step, or a `generate` script next to `dev`).
+Add `--api-url http://localhost:8080` (or `ACE_API_URL`) only for a CMS on your own machine. It reads `GET /public/content-types` (no login: it describes field names and kinds, never entries) and writes `src/ace-kit.generated.d.ts` (change it with `--out`). Make sure the file is inside your `tsconfig` `include`. Commit it, and run the command again whenever content types change (a good moment is a CI step, or a `generate` script next to `dev`).
 
 ```ts
 // ace-kit.generated.d.ts (generated)
