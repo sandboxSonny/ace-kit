@@ -14,7 +14,8 @@ export const maximumCachedAnswers = 500;
 
 /**
  * A client for the CMS Ace public API. It runs on the server only, so the visitor's browser never talks to the
- * API. The API finds the site from X-Forwarded-Host, which this client sets to the site's domain.
+ * API. The API finds the site from X-Ace-Site-Domain, which this client sets to the site's domain. X-Forwarded-Host
+ * is sent too, for an API that predates the first (some platforms' proxies rewrite X-Forwarded-Host on the way in).
  */
 export function createAceClient({
   apiUrl,
@@ -42,7 +43,7 @@ export function createAceClient({
     let response: Response;
     try {
       response = await fetchImplementation(`${apiUrl.replace(/\/+$/, "")}${path}`, {
-        headers: { Accept: "application/json", "X-Forwarded-Host": siteDomain },
+        headers: { Accept: "application/json", "X-Ace-Site-Domain": siteDomain, "X-Forwarded-Host": siteDomain },
         signal: AbortSignal.timeout(requestTimeoutMilliseconds),
       });
     } catch {

@@ -48,6 +48,7 @@ describe("the settings", () => {
     await getEntry("pages", "about");
     const [address, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(address).toBe("https://api.example.test/public/entries/about");
+    expect((init.headers as Record<string, string>)["X-Ace-Site-Domain"]).toBe("site.example.test");
     expect((init.headers as Record<string, string>)["X-Forwarded-Host"]).toBe("site.example.test");
   });
 
@@ -61,6 +62,7 @@ describe("the settings", () => {
     await getEntry("pages", "about");
     const [address, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(address).toBe("http://localhost:8080/public/entries/about");
+    expect((init.headers as Record<string, string>)["X-Ace-Site-Domain"]).toBe("localhost");
     expect((init.headers as Record<string, string>)["X-Forwarded-Host"]).toBe("localhost");
   });
 });
