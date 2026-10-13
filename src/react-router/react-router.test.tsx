@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AceNotice, AceRichText, createMeta, meta, useAceMenu, useAcePreview } from "./index";
+import { AceLink, AceNotice, AceRichText, createMeta, meta, useAceMenu, useAcePreview } from "./index";
 import type { AceRootData } from "../types/react-router";
 
 afterEach(cleanup);
@@ -117,6 +117,36 @@ describe("AceRichText", () => {
     renderInRoot(<AceRichText document={document} />);
     expect((await screen.findByRole("link", { name: "inside" })).getAttribute("href")).toBe("/pages/contact");
     expect(screen.getByRole("link", { name: "outside" }).getAttribute("href")).toBe("https://example.com");
+  });
+});
+
+describe("AceLink", () => {
+  it("draws a link to a page of the site with the router, and any other as a plain link", async () => {
+    const router = renderInRoot(
+      <>
+        <AceLink link={{ href: "/pages/contact", label: "Contact us" }} className="button" />
+        <AceLink link={{ href: "https://example.com", label: "Elsewhere" }} />
+      </>,
+    );
+    const inside = await screen.findByRole("link", { name: "Contact us" });
+    expect(inside.getAttribute("href")).toBe("/pages/contact");
+    expect(inside.className).toBe("button");
+    expect(screen.getByRole("link", { name: "Elsewhere" }).getAttribute("href")).toBe("https://example.com");
+
+    // A router link changes the page without reloading it.
+    inside.click();
+    await vi.waitFor(() => expect(router.state.location.pathname).toBe("/pages/contact"));
+  });
+
+  it("draws nothing for an address that can't be trusted", async () => {
+    renderInRoot(
+      <>
+        <AceLink link={{ href: "javascript:alert(1)", label: "Click" }} />
+        <p>Drawn</p>
+      </>,
+    );
+    await screen.findByText("Drawn");
+    expect(screen.queryByRole("link")).toBeNull();
   });
 });
 

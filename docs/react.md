@@ -3,7 +3,7 @@
 Needs `react` 18 or newer. The components work with any React framework (React Router, Next.js, Remix, plain Vite). **On React Router 7, use the [React Router adapter](./react-router.md) instead of wiring this up yourself.** Fetch with the [client](./getting-started.md#the-client) on the server (a loader, a server component, `getServerSideProps`), then draw.
 
 ```tsx
-import { AceImage, AceRichText } from "@sandboxsonny/ace-kit/react";
+import { AceImage, AceLink, AceRichText } from "@sandboxsonny/ace-kit/react";
 ```
 
 ## AceImage
@@ -13,6 +13,18 @@ import { AceImage, AceRichText } from "@sandboxsonny/ace-kit/react";
 ```
 
 An `<img>` with `src`, `srcset`, `sizes`, `width`, `height` and `alt`. Any other `<img>` prop (`className`, `style`, `onLoad`...) is passed through. `lazy` defaults to `true`; turn it off for the image at the top of the page.
+
+## AceLink
+
+```tsx
+{
+  entry.values.button ? <AceLink link={entry.values.button} className="button" /> : null;
+}
+```
+
+A link field as an `<a>` with the editor's words, or the address when there are none; children replace the words. Nothing is drawn if the address can't be trusted. Give it your router's link with `as` so navigation stays in the browser (`as={({ href, children, className }) => <Link to={href} className={className}>{children}</Link>}`).
+
+A date field is text: `formatAceDate(entry.values.published, { locale: "en-GB" })` gives "13 October 2026" whatever the server's time zone, and `<time dateTime={entry.values.published}>` takes the raw value.
 
 ## AceRichText
 

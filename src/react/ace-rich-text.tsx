@@ -6,7 +6,7 @@ import { headingLevel, listStart, richTextImageSizes } from "../helpers/rich-tex
 import type { AceRichTextDocument, AceRichTextNode } from "../types/rich-text";
 
 /** What a link in the text is drawn with. Give one that uses your router's link to keep navigation client-side. */
-export type AceRichTextLink = ComponentType<{ href: string; children: ReactNode }>;
+export type AceRichTextLink = ComponentType<{ href: string; children: ReactNode; className?: string }>;
 
 type AceRichTextProps = {
   document: AceRichTextDocument;

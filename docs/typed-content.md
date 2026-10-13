@@ -35,15 +35,17 @@ about?.values.headline; // string
 cms.getEntry("pagez", "about"); // type error: no such content type
 ```
 
-| Field                            | Type                                                |
-| -------------------------------- | --------------------------------------------------- |
-| Text, Textarea                   | `string`                                            |
-| Number                           | `number`                                            |
-| Checkbox                         | `boolean`                                           |
-| Select                           | a union of its options, e.g. `"formal" \| "casual"` |
-| Image                            | `AceImageData`                                      |
-| Rich text                        | `AceRichTextDocument`                               |
-| a kind this version doesn't know | `unknown`                                           |
+| Field                            | Type                                                       |
+| -------------------------------- | ---------------------------------------------------------- |
+| Text, Textarea                   | `string`                                                   |
+| Number                           | `number`                                                   |
+| Checkbox                         | `boolean`                                                  |
+| Select                           | a union of its options, e.g. `"formal" \| "casual"`        |
+| Image                            | `AceImageData`                                             |
+| Rich text                        | `AceRichTextDocument`                                      |
+| Date                             | `string`, a day written `YYYY-MM-DD` (see `formatAceDate`) |
+| Link                             | `AceLinkData`: `{ href, label? }`                          |
+| a kind this version doesn't know | `unknown`                                                  |
 
 A field is optional unless it is marked required in the CMS. Before you generate, handles are plain `string` and values are `Record<string, unknown>`, so nothing breaks.
 

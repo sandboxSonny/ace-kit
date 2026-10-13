@@ -48,6 +48,23 @@ describe("generateTypes", () => {
     expect(output).toContain('"mystery"?: unknown;');
   });
 
+  it("types a date as text and a link as the link the API gives", () => {
+    const events = {
+      handle: "events",
+      name: "Events",
+      fields: [
+        { handle: "starts", label: "Starts", component_key: "date", config: { required: true } },
+        { handle: "ends", label: "Ends", component_key: "date", config: {} },
+        { handle: "tickets", label: "Tickets", component_key: "link", config: {} },
+      ],
+    };
+    const generated = generateTypes([events], "@scope/ace-kit", "x");
+    expect(generated).toContain('"starts": string;');
+    expect(generated).toContain('"ends"?: string;');
+    expect(generated).toContain('"tickets"?: AceLinkData;');
+    expect(generated).toContain('import type { AceLinkData } from "@scope/ace-kit";');
+  });
+
   it("imports only the types it uses", () => {
     expect(output).toContain('import type { AceImageData, AceRichTextDocument } from "@scope/ace-kit";');
     expect(

@@ -1,0 +1,20 @@
+---
+import { linkAttributes } from "../dist/index.js";
+import type { AceLinkData } from "../dist/index.js";
+
+type Props = {
+  /** A link field's value: `entry.values.button`. */
+  link: AceLinkData;
+  class?: string;
+};
+
+const { link, class: className } = Astro.props;
+const attributes = linkAttributes(link);
+const hasContent = Astro.slots.has("default");
+---
+
+{attributes && (
+  <a href={attributes.href} class={className}>
+    {hasContent ? <slot /> : (attributes.label ?? attributes.href)}
+  </a>
+)}
