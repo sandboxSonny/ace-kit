@@ -54,6 +54,7 @@ describe("getPage", () => {
     expect(page).toMatchObject({ kind: "entry", status: 200 });
     const [address, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(address).toBe("https://api.example.test/public/entries/about");
+    expect((init.headers as Record<string, string>)["X-Ace-Site-Domain"]).toBe("site.example.test");
     expect((init.headers as Record<string, string>)["X-Forwarded-Host"]).toBe("site.example.test");
   });
 

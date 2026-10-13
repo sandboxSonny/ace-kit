@@ -23,6 +23,7 @@ describe("getEntry", () => {
     expect(found).toEqual(entry);
     const [address, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
     expect(address).toBe("https://api.example.com/public/entries/home");
+    expect((init.headers as Record<string, string>)["X-Ace-Site-Domain"]).toBe("example.test");
     expect((init.headers as Record<string, string>)["X-Forwarded-Host"]).toBe("example.test");
   });
 
