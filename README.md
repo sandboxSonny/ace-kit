@@ -51,7 +51,8 @@ const about = await getEntry("pages", "about");
 | [React](docs/react.md)                     | Components for any React framework           |
 | [Live preview](docs/live-preview.md)       | What a site must do for the editor's preview |
 | [Typed content](docs/typed-content.md)     | `ace-kit generate`                           |
-| [The command line](docs/command-line.md)   | `ace-kit login`, `logout`, `whoami`          |
+| [The command line](docs/command-line.md)   | `ace-kit login`, `logout`, `whoami`, `sync`  |
+| [Sections](docs/sections.md)               | `defineSection`, `AceSections`, the sync     |
 | [Rich text](docs/rich-text.md)             | The document format and how it is drawn      |
 | [API reference](docs/api-reference.md)     | Every export                                 |
 | [Releasing](docs/releasing.md)             | Versions, the changelog and publishing       |

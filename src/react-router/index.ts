@@ -5,6 +5,7 @@ export { AceLink } from "./ace-link";
 export { AceTextArea } from "../react/ace-text-area";
 export { AceNotice } from "./ace-notice";
 export { AceRichText } from "./ace-rich-text";
+export { AceSections } from "../react/ace-sections";
 export { createMeta, meta } from "./meta";
 export { useAceMenu, useAcePreview } from "./use-ace";
 export type { AceRootData } from "../types/react-router";

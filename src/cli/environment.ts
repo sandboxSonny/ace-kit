@@ -84,6 +84,7 @@ async function importModule(path: string): Promise<unknown> {
     if ((error as { code?: string }).code === "ERR_UNKNOWN_FILE_EXTENSION") {
       throw new Error(
         "this version of Node can't run TypeScript files. Use Node 22.18 or newer, or write the schema in .js.",
+        { cause: error },
       );
     }
     throw error;

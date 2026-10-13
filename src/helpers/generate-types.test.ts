@@ -65,6 +65,17 @@ describe("generateTypes", () => {
     expect(generated).toContain('import type { AceLinkData } from "@scope/ace-kit";');
   });
 
+  it("types a sections field as a list of sections of any kind", () => {
+    const landing = {
+      handle: "landing",
+      name: "Landing",
+      fields: [{ handle: "content", label: "Content", component_key: "sections", config: {} }],
+    };
+    const generated = generateTypes([landing], "@scope/ace-kit", "x");
+    expect(generated).toContain('"content"?: AceSection[];');
+    expect(generated).toContain('import type { AceSection } from "@scope/ace-kit";');
+  });
+
   it("imports only the types it uses", () => {
     expect(output).toContain('import type { AceImageData, AceRichTextDocument } from "@scope/ace-kit";');
     expect(

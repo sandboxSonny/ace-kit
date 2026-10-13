@@ -2,6 +2,7 @@
 export { AceImage } from "./ace-image";
 export { AceLink } from "./ace-link";
 export { AceRichText } from "./ace-rich-text";
+export { AceSections } from "./ace-sections";
 export { AceTextArea } from "./ace-text-area";
 export type { AceRichTextLink } from "./ace-rich-text";
 export { usePreviewRefresh } from "./use-preview-refresh";

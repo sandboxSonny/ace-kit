@@ -1,0 +1,28 @@
+---
+import type { AceSection } from "../dist/index.js";
+
+type Props = {
+  /** An entry's sections field, as the CMS gives it: a list of sections, or nothing. */
+  sections: readonly AceSection[] | null | undefined;
+  /**
+   * The component that draws each kind of section, by the section's `type` (the handle in its schema). Each one is
+   * given the section as its `section` prop. A kind with no component is left out (and noted in development).
+   */
+  components: Record<string, unknown>;
+};
+
+const { sections, components } = Astro.props;
+const list = Array.isArray(sections) ? sections : [];
+---
+
+{list.map((section) => {
+  // An Astro component's props are checked where it is written (its own schema types them), not here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Component = Object.hasOwn(components, section.type) ? (components[section.type] as any) : undefined;
+  if (!Component) {
+    if (import.meta.env.DEV)
+      console.warn(`AceSections: no component draws the section type "${section.type}", so it was left out.`);
+    return null;
+  }
+  return <Component section={section} />;
+})}

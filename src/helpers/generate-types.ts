@@ -5,7 +5,7 @@ const quote = (text: string) => JSON.stringify(text);
 /** The TypeScript type of what a field holds in an entry's values, and which type names it needs from the package. */
 function typeOfField(field: AceFieldSchema): {
   type: string;
-  uses?: "AceImageData" | "AceLinkData" | "AceRichTextDocument";
+  uses?: "AceImageData" | "AceLinkData" | "AceRichTextDocument" | "AceSection";
 } {
   switch (field.component_key) {
     case "text":
@@ -28,6 +28,9 @@ function typeOfField(field: AceFieldSchema): {
       return { type: "string" };
     case "link":
       return { type: "AceLinkData", uses: "AceLinkData" };
+    case "sections":
+      // A list of sections of any kind. Each kind's own component types its section from its schema (SectionOf).
+      return { type: "AceSection[]", uses: "AceSection" };
     default:
       // A kind of field this version of the package doesn't know yet.
       return { type: "unknown" };

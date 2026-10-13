@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AceLink, AceNotice, AceRichText, createMeta, meta, useAceMenu, useAcePreview } from "./index";
+import { AceLink, AceNotice, AceRichText, AceSections, createMeta, meta, useAceMenu, useAcePreview } from "./index";
 import type { AceRootData } from "../types/react-router";
 
 afterEach(cleanup);
@@ -147,6 +147,13 @@ describe("AceLink", () => {
     );
     await screen.findByText("Drawn");
     expect(screen.queryByRole("link")).toBeNull();
+  });
+});
+
+describe("AceSections", () => {
+  it("is the same component as the React one, available from the React Router entry", async () => {
+    const { AceSections: ReactAceSections } = await import("../react");
+    expect(AceSections).toBe(ReactAceSections);
   });
 });
 

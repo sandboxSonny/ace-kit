@@ -7,6 +7,7 @@ npx ace-kit login      # sign in
 npx ace-kit whoami     # who am I signed in as?
 npx ace-kit logout     # sign out
 npx ace-kit generate   # write TypeScript types (see Typed content)
+npx ace-kit sync       # send your section types to the CMS (see Sections)
 ```
 
 Every command takes `--api-url`, or reads `ACE_API_URL` from the environment or a `.env` file in the folder you run it in. Failing both, it uses the address you last signed in to (kept in a small file beside your logins), so after `ace-kit login --api-url …` you can simply run `ace-kit whoami` from anywhere.
