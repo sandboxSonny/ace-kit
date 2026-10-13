@@ -1,5 +1,26 @@
 # @sandboxsonny/ace-kit
 
+## 0.4.0
+
+### Minor Changes
+
+- 7efae5a: Dev sites: against a hosted CMS, the dev server now works on your own private copy of the site instead of the live one.
+  
+  - On start (the Astro integration, and the `ace()` Vite plugin), the dev server finds or makes your dev site of the site `ACE_SITE_DOMAIN` names, points the site at it for as long as the server runs (`.env` is unchanged), and tells the CMS where the dev server runs so the live preview shows it.
+  - Section sync goes to the dev site, so it is now allowed automatically against a hosted CMS without `ACE_SYNC_SECTIONS=remote`. The live site only changes when you run `npx ace-kit sync` yourself.
+  - Without a login, or with an account that can't have a dev site, the dev server says why and shows the live site read-only, with section sync off.
+  - `ACE_DEV_SITE=false` turns it off; `ACE_DEV_SITE=true` uses one even against a CMS on your own machine.
+  
+  Needs a CMS Ace API with dev sites (migration 00022), and a partner or super admin account.
+- 7efae5a: Sections defined in code, and synced to the CMS as you work.
+  
+  - `defineSection` describes a kind of section (its fields, and the blocks it can hold) in a `*.schema.ts` file next to the component that draws it. `SectionOf<typeof schema>` gives the type of such a section, so a component's props follow its schema: a required field is always there, a select is the union of its options, an image is `AceImageData`, and a block's values depend on its kind.
+  - While the dev server runs (the Astro integration, and the `ace()` Vite plugin on React Router), saving a schema file syncs the site's section types to the CMS. `ace-kit sync` does the same once, for a build server (with `ACE_TOKEN`). Nothing is deleted: what you take out of your code is kept in the CMS, hidden. If any schema file can't be loaded, or none are found, nothing is synced. Automatic sync only runs against a local CMS unless `ACE_SYNC_SECTIONS=remote`.
+  - `AceSections` draws a sections field, giving each section to the component for its kind: `AceSections.astro`, and `AceSections` from `/react` and `/react-router`.
+  - `ace-kit generate` types a sections field as `AceSection[]`.
+  
+  Needs a CMS Ace API with sections (migration 00019) and command-line sign-in (00020). Schema files are TypeScript: Node 22.18 or newer runs them as they are.
+
 ## 0.3.0
 
 ### Minor Changes
