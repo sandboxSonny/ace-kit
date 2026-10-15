@@ -3,6 +3,7 @@ import { loadEnv } from "vite";
 import { chooseLoginStore } from "../auth/choose-store";
 import { normaliseApiUrl } from "../auth/login-store";
 import { hostedApiUrl } from "../helpers/platform";
+import { cmsLabel, loginCommandFor } from "../cli/api-url";
 import { runCommand } from "../cli/environment";
 import { findOrCreateDevSite } from "./find-or-create";
 import { prepareDevSite } from "./prepare-dev-site";
@@ -71,8 +72,8 @@ export async function startDevSite(options: StartDevSiteOptions): Promise<DevSit
       return null;
     case "waiting-for-login":
       log.warn(
-        `You are not signed in to ${outcome.apiUrl}, so this is showing the live site and section sync is off. ` +
-          `Run: npx ace-kit login --api-url ${outcome.apiUrl}`,
+        `You are not signed in to ${cmsLabel(outcome.apiUrl)}, so this is showing the live site and section sync is off. ` +
+          `Run: ${loginCommandFor(outcome.apiUrl)}`,
       );
       return null;
     case "problem":

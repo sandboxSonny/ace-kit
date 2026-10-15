@@ -10,14 +10,14 @@ import type { Framework } from "../create/create-site";
 import { createAndSeedSite } from "../create/seed-site";
 import { frameworksWithSections } from "../create/starter-content";
 import { hostedApiUrl } from "../helpers/platform";
-import { isLocalApiUrl } from "./api-url";
+import { cmsName, isLocalApiUrl } from "./api-url";
 import type { CliEnvironment } from "./environment";
 import { signIn } from "./login-commands";
 
 export const createUsage = `ace-kit create: make a new site that uses CMS Ace.
 
 Usage:
-  ace-kit create <folder> <domain> [--framework astro|react-router] [--name <name>] [--api-url <address>]
+  ace-kit create <folder> <domain> [--framework astro|react-router] [--name <name>]
 
 It signs you in if you aren't already (your browser opens to approve it), makes the site in CMS Ace with starter
 content (a Pages type, Home, About and Contact, a main menu), and copies a starter site into the folder with your
@@ -28,7 +28,6 @@ Options:
   <domain>      The domain the site has in CMS Ace, e.g. example.com. (--site <domain> means the same.)
   --framework   astro (the default) or react-router.
   --name        The name shown to visitors (default: made from the folder's name, so my-site is "My Site").
-  --api-url     Where the CMS Ace API lives (or set ACE_API_URL). Only for a CMS on your own machine.
   --help        Show this message.
 `;
 
@@ -79,7 +78,7 @@ export async function createCommand(commandArguments: string[], environment: Cli
 
   if (apiUrl.startsWith("http://") && !isLocalApiUrl(apiUrl)) {
     environment.error(
-      `Warning: ${apiUrl} is not encrypted (http://), so your login could be read on the way. Use https:// if you can.`,
+      `Warning: ${cmsName(apiUrl)} is not encrypted (http://), so your login could be read on the way. Use https:// if you can.`,
     );
   }
 
@@ -142,7 +141,7 @@ export async function createCommand(commandArguments: string[], environment: Cli
   switch (seeded.kind) {
     case "seeded":
       environment.out(
-        `Made ${created.domain} in CMS Ace (${apiUrl}) with a Pages type, ${seeded.entries} entries and a main menu.`,
+        `Made ${created.domain} in ${apiUrl === hostedApiUrl ? "CMS Ace" : `CMS Ace (${apiUrl})`} with a Pages type, ${seeded.entries} entries and a main menu.`,
       );
       break;
     case "exists":

@@ -20,6 +20,19 @@ export async function resolveApiUrl(
   }
 }
 
+/**
+ * How a message names the CMS. The hosted CMS Ace is just "CMS Ace": nobody using it needs to see an address. A CMS
+ * on someone's own machine is named by its address, which is what tells them where they are connected.
+ */
+export const cmsName = (apiUrl: string) => (apiUrl === hostedApiUrl ? "CMS Ace" : `the CMS at ${apiUrl}`);
+
+/** The same without "the CMS at", for a sentence that reads "Signed in to ...". */
+export const cmsLabel = (apiUrl: string) => (apiUrl === hostedApiUrl ? "CMS Ace" : apiUrl);
+
+/** The command to sign in again: only a CMS that isn't the hosted one needs to be named. */
+export const loginCommandFor = (apiUrl: string) =>
+  apiUrl === hostedApiUrl ? "npx ace-kit login" : `npx ace-kit login --api-url ${apiUrl}`;
+
 /** Whether an API address is on this machine. */
 export function isLocalApiUrl(apiUrl: string): boolean {
   return ["localhost", "127.0.0.1", "[::1]"].includes(new URL(apiUrl).hostname);

@@ -27,6 +27,17 @@ docs/           the guides; Storybook shows these too
 stories/        Storybook stories
 ```
 
+## Running against a CMS on your own machine
+
+For people working on CMS Ace itself. A site and the command line tool connect to the hosted CMS Ace without being told, and the address is deliberately left out of `--help` and the guides. To use a local CMS instead, set these in the site's `.env` (or the environment):
+
+```
+ACE_API_URL=http://localhost:8080
+ACE_PREVIEW_ADMIN_ORIGIN=http://localhost:5173
+```
+
+and for a command, `--api-url http://localhost:8080` works too. `ace-kit create` against a local CMS writes that `.env` for the new site and sets the site's Preview address to its dev server. The starters under `templates/` are copies of the example sites in the CMS Ace repository (`npm run sync:templates`).
+
 ## Rules
 
 - **Spell names out** (`request`, not `req`; ESLint enforces a list of the usual suspects).
