@@ -24,7 +24,7 @@ src/
   generate/     the `ace-kit` command line tool
 astro/          Astro components (.astro)
 docs/           the guides; Storybook shows these too
-stories/        Storybook stories
+stories/        Storybook stories (published to https://sandboxsonny.github.io/ace-kit/ by .github/workflows/storybook.yml whenever main changes)
 ```
 
 ## Rules
