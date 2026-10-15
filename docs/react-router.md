@@ -4,7 +4,7 @@ Ace Kit has a React Router adapter, so a site only writes its design. It needs `
 
 ```
 app/
-  routes.ts            route("*", "routes/page.tsx")            one route draws every page
+  routes.ts            index + route("*") for routes/page.tsx  one route draws every page
   entry.server.tsx     one line
   root.tsx             createRootLoader + your layout and header
   routes/page.tsx      createPageLoader + your page
@@ -47,9 +47,13 @@ It waits until a page is completely ready before answering (every page is fully 
 
 ```ts
 // app/routes.ts
-import { type RouteConfig, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
-export default [route("*", "routes/page.tsx")] satisfies RouteConfig;
+// "/" is the home entry. A "*" route doesn't match "/", so the home page needs its own `index` line.
+export default [
+  index("routes/page.tsx", { id: "home" }),
+  route("*", "routes/page.tsx", { id: "page" }),
+] satisfies RouteConfig;
 ```
 
 ```tsx
@@ -117,3 +121,28 @@ export async function loader() {
 ## Without the adapter
 
 Everything the adapter does is built from the framework-free [core](./getting-started.md): `loadPage`, `loadMenuLinks`, `previewTokenFrom`, `addFramingPolicy`, the [React components](./react.md) and `usePreviewRefresh`. The adapter is about 150 lines; read it if you need to do something it doesn't.
+
+## Sections
+
+A sections field is drawn with `AceSections`, which gives each section to the component for its kind. Each kind is a component with a `*.schema.ts` file beside it saying what an editor can fill in (see [Sections](./sections.md)):
+
+```tsx
+// app/components/page-content.tsx
+import { AceSections } from "@sandboxsonny/ace-kit/react-router";
+
+import { Hero } from "~/components/sections/hero";
+
+<AceSections sections={entry.values.content} components={{ hero: Hero }} />;
+```
+
+```tsx
+// app/components/sections/hero.tsx, typed from hero.schema.ts
+import type { SectionOf } from "@sandboxsonny/ace-kit";
+import type hero from "./hero.schema";
+
+export function Hero({ section }: { section: SectionOf<typeof hero> }) {
+  return <h2>{section.values.heading}</h2>;
+}
+```
+
+Schema files in `app/` (or `src/`) are found by `ace-kit sync`, and while `npm run dev` runs, saving one syncs it to the CMS. A new site from `npx @sandboxsonny/ace-kit create --framework react-router` comes with a hero, an FAQ and a gallery.

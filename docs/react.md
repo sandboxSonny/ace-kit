@@ -74,8 +74,11 @@ Pass `adminOrigin` only for a page shown with a preview token (`previewTokenFrom
 ## A route in React Router 7
 
 ```tsx
-// app/routes.ts: one route draws every page
-export default [route("*", "routes/page.tsx")] satisfies RouteConfig;
+// app/routes.ts: one route draws every page ("/" needs its own index line: a "*" route does not match it)
+export default [
+  index("routes/page.tsx", { id: "home" }),
+  route("*", "routes/page.tsx", { id: "page" }),
+] satisfies RouteConfig;
 
 // app/routes/page.tsx
 export async function loader({ request, params }: Route.LoaderArgs) {

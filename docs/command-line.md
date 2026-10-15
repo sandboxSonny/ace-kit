@@ -24,19 +24,19 @@ One command makes everything a new site needs:
 
 1. **Checks** the folder, the domain and the name, before anything is made.
 2. **Signs you in** if you aren't already (your browser opens; type the code from the terminal, as in [Signing in](#signing-in)).
-3. **Makes the site in CMS Ace** and gives it a starter: a `pages` content type, Home, About and Contact entries, a main menu and, for the Astro starter, the three example section types (hero, FAQ, gallery).
+3. **Makes the site in CMS Ace** and gives it a starter: a `pages` content type, Home, About and Contact entries, a main menu and the three example section types (hero, FAQ, gallery).
 4. **Copies a starter site** into `my-site/` with its name, domain and package name filled in.
 
 If a site with that domain already exists in CMS Ace, it is **left alone** (nothing is added to it, in case it has real content), a warning says so, and only the folder is made. If the CMS refuses to make the site (for instance, you have made as many as your account allows) nothing is made at all.
 
 Your account must be a **partner or super admin** (only they can make sites). The login `create` uses can set up the site it just made, for an hour, and no other site: it can't write content anywhere else.
 
-| Option                            | Meaning                                                                                |
-| --------------------------------- | -------------------------------------------------------------------------------------- |
-| `<domain>` (or `--site <domain>`) | The domain the site has in CMS Ace. Required.                                          |
-| `--framework astro\|react-router` | `astro` (the default) or `react-router`. The React Router starter has no sections yet. |
-| `--name <name>`                   | The name shown to visitors. Default: made from the folder, so `my-site` is "My Site".  |
-| `--api-url <address>`             | Only for a CMS on your own machine (or set `ACE_API_URL`).                             |
+| Option                            | Meaning                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `<domain>` (or `--site <domain>`) | The domain the site has in CMS Ace. Required.                                         |
+| `--framework astro\|react-router` | `astro` (the default) or `react-router`. Both have the same three example sections.   |
+| `--name <name>`                   | The name shown to visitors. Default: made from the folder, so `my-site` is "My Site". |
+| `--api-url <address>`             | Only for a CMS on your own machine (or set `ACE_API_URL`).                            |
 
 Against a CMS on your own machine (`--api-url` or `ACE_API_URL` set to `http://localhost:8080`), it also writes a `.env` in the new folder with `ACE_API_URL` and `ACE_PREVIEW_ADMIN_ORIGIN=http://localhost:5173`, and sets the site's Preview address to the local dev server (`http://localhost:4321`, or 4322 for React Router), so the site and live preview work with no more setup. Against the hosted CMS Ace none of that is needed.
 

@@ -23,7 +23,7 @@ says what to do. It exits with 1 if anything is wrong.
 Options:
   --site      The domain your site has in the CMS (default: ACE_SITE_DOMAIN, else Astro's \`site\` setting).
   --api-url   Where the CMS Ace API lives (default: ACE_API_URL, else the hosted CMS Ace).
-  --dir       The folder holding your *.schema.ts files (default: src).
+  --dir       The folder holding your *.schema.ts files (default: src and app).
   --help      Show this message.
 `;
 
@@ -276,7 +276,7 @@ export async function doctorCommand(commandArguments: string[], environment: Cli
   }
 
   async function checkSections(address: string, siteId: number, authorised: Record<string, string>) {
-    const files = await findSchemaFiles(root, values.dir ?? "src");
+    const files = await findSchemaFiles(root, values.dir);
     if (files.length === 0) {
       add("info", "No section schemas (*.schema.ts) in your code");
       return;

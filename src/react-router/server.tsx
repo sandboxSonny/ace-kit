@@ -59,7 +59,7 @@ export const getMenuLinks = (handle: string, options: { fallback?: AceNavigation
   loadMenuLinks(getAceClient(), handle, options.fallback ?? []);
 
 /**
- * The loader for the route that draws every page. The route is a catch-all (`route("*", "routes/page.tsx")`):
+ * The loader for the route that draws every page. The route is a catch-all, plus an index line because "*" does not match "/" (`index("routes/page.tsx", { id: "home" })` and `route("*", "routes/page.tsx", { id: "page" })`):
  *
  *     export const loader = createPageLoader<PageValues>();
  *     export { headers } from "@sandboxsonny/ace-kit/react-router/server";

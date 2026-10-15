@@ -52,12 +52,14 @@ describe("findSchemaFiles", () => {
     expect(names(await findSchemaFiles(root))).toEqual(["src/Real.schema.ts"]);
   });
 
-  it("only looks in the folder asked for, which is src by default", async () => {
+  it("looks in src and app unless a folder is asked for, and nowhere else", async () => {
     await touch("src", "InSrc.schema.ts");
     await touch("app", "InApp.schema.ts");
+    await touch("lib", "Elsewhere.schema.ts");
     await touch("Root.schema.ts");
-    expect(names(await findSchemaFiles(root))).toEqual(["src/InSrc.schema.ts"]);
+    expect(names(await findSchemaFiles(root))).toEqual(["app/InApp.schema.ts", "src/InSrc.schema.ts"]);
     expect(names(await findSchemaFiles(root, "app"))).toEqual(["app/InApp.schema.ts"]);
+    expect(names(await findSchemaFiles(root, "lib"))).toEqual(["lib/Elsewhere.schema.ts"]);
   });
 
   it("finds nothing, without failing, when the folder isn't there", async () => {

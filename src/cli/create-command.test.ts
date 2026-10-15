@@ -163,7 +163,7 @@ describe("ace-kit create", () => {
     expect(bodyOf(created.requests[1]!).domain).toBe("shop.example.com");
   });
 
-  it("makes a React Router site without sections", async () => {
+  it("makes a React Router site with the same sections", async () => {
     const created = setup();
     expect(
       await runCli(
@@ -171,13 +171,19 @@ describe("ace-kit create", () => {
         created.environment,
       ),
     ).toBe(0);
-    expect(calls(created)).not.toContain("PUT /sites/7/section-types");
+    const sectionTypes = created.requests.find((request) => request.address.endsWith("/section-types"))!;
+    expect(bodyOf(sectionTypes).sections.map((section: { handle: string }) => section.handle)).toEqual([
+      "faq",
+      "gallery",
+      "hero",
+    ]);
     const contentType = created.requests.find((request) => request.address.endsWith("/content-types"))!;
-    expect(bodyOf(contentType).fields.map((field: { handle: string }) => field.handle)).not.toContain("content");
+    expect(bodyOf(contentType).fields.map((field: { handle: string }) => field.handle)).toContain("content");
     const home = created.requests.find((request) => request.address.endsWith("/entries"))!;
-    expect(bodyOf(home).values.content).toBeUndefined();
+    expect(bodyOf(home).values.content.map((section: { type: string }) => section.type)).toEqual(["hero", "faq"]);
     expect(created.output.join("\n")).toContain("Made The Shop (react-router)");
     expect(await readFile(join(root, "shop", "react-router.config.ts"), "utf8")).toContain("ssr");
+    expect(await exists(join(root, "shop", "app/components/sections/hero.schema.ts"))).toBe(true);
   });
 
   it("leaves a site that already exists alone, says so, and still makes the folder", async () => {

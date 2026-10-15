@@ -59,15 +59,18 @@ async function listFiles(folder, base = folder) {
  * new folder has no node_modules yet. Null for a starter with no sections.
  */
 async function sectionTypesOf(source) {
-  const files = (await listFiles(join(source, "src")).catch(() => [])).filter((file) =>
-    /\.schema\.(ts|mts|js|mjs)$/.test(file),
-  );
+  // Astro keeps code in src, React Router in app.
+  const files = [];
+  for (const folder of ["src", "app"]) {
+    for (const file of await listFiles(join(source, folder)).catch(() => []))
+      if (/\.schema\.(ts|mts|js|mjs)$/.test(file)) files.push(join(source, folder, file));
+  }
   if (files.length === 0) return null;
   const { sectionTypesPayload } = await import(
     pathToFileURL(join(source, "node_modules/@sandboxsonny/ace-kit/dist/index.js")).href
   );
   const definitions = [];
-  for (const file of files) definitions.push((await import(pathToFileURL(join(source, "src", file)).href)).default);
+  for (const file of files) definitions.push((await import(pathToFileURL(file).href)).default);
   return `${JSON.stringify(sectionTypesPayload(definitions), null, 2)}\n`;
 }
 

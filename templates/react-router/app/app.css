@@ -170,3 +170,88 @@ a {
   padding-left: 1rem;
   font-style: italic;
 }
+.published {
+  color: var(--colour-muted);
+  font-size: 0.9rem;
+}
+.actions {
+  margin-top: 2rem;
+}
+
+/* Sections: a hero, an FAQ and a gallery (see components/sections) */
+.hero {
+  padding-block: 3rem;
+}
+.hero__inner {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+@media (min-width: 48rem) {
+  .hero__inner--with-picture {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.hero h2 {
+  margin: 0 0 0.75rem;
+  font-size: 2.25rem;
+  line-height: 1.15;
+}
+.hero__subheading {
+  margin: 0 0 1.5rem;
+  color: var(--colour-muted);
+  font-size: 1.15rem;
+}
+.hero__picture img {
+  border-radius: 0.5rem;
+}
+
+.faq {
+  max-width: 42rem;
+}
+.faq h2 {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+}
+.faq details {
+  border-bottom: 1px solid var(--colour-surface);
+  padding-block: 0.75rem;
+}
+.faq summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.faq__answer {
+  margin-top: 0.5rem;
+  color: var(--colour-muted);
+}
+.faq__answer > * + * {
+  margin-top: 0.75rem;
+}
+
+.gallery__note {
+  margin: 0 0 1rem;
+  color: var(--colour-muted);
+  font-size: 0.9rem;
+}
+.gallery__photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gallery__photos figure {
+  margin: 0;
+}
+.gallery__photos img {
+  border-radius: 0.5rem;
+  width: 100%;
+  object-fit: cover;
+}
+.gallery__photos figcaption {
+  margin-top: 0.4rem;
+  color: var(--colour-muted);
+  font-size: 0.9rem;
+}

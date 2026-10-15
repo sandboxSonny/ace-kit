@@ -47,6 +47,60 @@ describe("the page", () => {
     expect(screen.getByRole("link", { name: "more" }).getAttribute("href")).toBe("/pages/contact");
   });
 
+  it("shows the published date and the button", () => {
+    show({
+      kind: "entry",
+      status: 200,
+      entry: {
+        ...entry,
+        values: { ...entry.values, published: "2026-10-13", button: { href: "/pages/contact", label: "Get in touch" } },
+      },
+      headers: {},
+    });
+    expect(screen.getByText("13 October 2026")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Get in touch" }).getAttribute("href")).toBe("/pages/contact");
+  });
+
+  it("draws each section with the component for its kind, in order, and leaves out a kind it has none for", () => {
+    const richText = (text: string) => ({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+    });
+    show({
+      kind: "entry",
+      status: 200,
+      entry: {
+        ...entry,
+        values: {
+          ...entry.values,
+          content: [
+            { id: "a", type: "hero", values: { heading: "Big news", subheading: "Read on" }, blocks: [] },
+            {
+              id: "b",
+              type: "faq",
+              values: { heading: "Questions" },
+              blocks: [
+                { id: "b1", type: "question", values: { question: "Why?", answer: richText("Because.") } },
+                { id: "b2", type: "question", values: { question: "How?" } },
+              ],
+            },
+            { id: "c", type: "gallery", values: { heading: "Photos" }, blocks: [] },
+            { id: "d", type: "mystery", values: {}, blocks: [] },
+          ],
+        },
+      },
+      headers: {},
+    });
+    expect(screen.getByRole("heading", { name: "Big news" })).toBeTruthy();
+    expect(screen.getByText("Read on")).toBeTruthy();
+    expect(screen.getByText("Why?")).toBeTruthy();
+    expect(screen.getByText("Because.")).toBeTruthy();
+    expect(screen.getByText("How?")).toBeTruthy();
+    expect(screen.getByText("No photos yet.")).toBeTruthy();
+    const kinds = [...document.querySelectorAll("[data-section]")].map((node) => node.getAttribute("data-section"));
+    expect(kinds).toEqual(["hero", "faq", "gallery"]);
+  });
+
   it("shows plain text bodies, from before the field was rich text, as paragraphs", () => {
     show({ kind: "entry", status: 200, entry: { ...entry, values: { body: "One\n\nTwo" } }, headers: {} });
     expect(screen.getByText("One")).toBeTruthy();
