@@ -152,13 +152,8 @@ export async function createSite(options: CreateSiteOptions): Promise<CreatedSit
     if (text !== original) await writeFile(path, text);
   }
 
-  // The settings a site can have. The hosted CMS Ace is the default, so only a CMS on your own machine needs any.
-  const settings = [
-    "# Where CMS Ace runs. Leave these out for the hosted CMS Ace; they are for a CMS on your own machine.",
-    "# ACE_API_URL=http://localhost:8080",
-    "# ACE_PREVIEW_ADMIN_ORIGIN=http://localhost:5173",
-    "",
-  ];
+  // The hosted CMS Ace is where a site connects unless told otherwise, so a new site's .env.example doesn't mention it.
+  // (Only a site made against a CMS on the developer's own machine gets a .env, written below.)
   const extraSettings = Object.entries(options.environmentSettings ?? {}).map(([name, value]) => `${name}=${value}`);
   if (options.framework === "astro") {
     await writeNew(
@@ -168,14 +163,13 @@ export async function createSite(options: CreateSiteOptions): Promise<CreatedSit
         "# The site's domain in CMS Ace is the `site` setting in astro.config.mjs. Set this only to override it.",
         "# ACE_SITE_DOMAIN=" + domain,
         "",
-        ...settings,
       ].join("\n"),
     );
     if (extraSettings.length > 0) await writeNew(folder, ".env", `${extraSettings.join("\n")}\n`);
   } else {
     // A React Router site names itself here, and the dev server reads .env.
     const domainLine = `ACE_SITE_DOMAIN=${domain}\n`;
-    await writeNew(folder, ".env.example", [`# The site's domain in CMS Ace.`, domainLine, ...settings].join("\n"));
+    await writeNew(folder, ".env.example", [`# The site's domain in CMS Ace.`, domainLine].join("\n"));
     await writeNew(folder, ".env", [domainLine.trim(), ...extraSettings].join("\n") + "\n");
   }
 

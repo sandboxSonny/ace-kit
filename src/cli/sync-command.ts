@@ -6,14 +6,14 @@ import { loadSchemas } from "../sections/load-schemas";
 import { sectionTypesPayload } from "../sections/payload";
 import { syncSectionTypes } from "../sections/sync";
 import { domainFromSite, hostedApiUrl } from "../helpers/platform";
-import { isLocalApiUrl } from "./api-url";
+import { cmsName, isLocalApiUrl, loginCommandFor } from "./api-url";
 import type { CliEnvironment } from "./environment";
 import { normaliseApiUrl } from "../auth/login-store";
 
 export const syncUsage = `ace-kit sync: send the section types your code defines to CMS Ace.
 
 Usage:
-  ace-kit sync [--site <domain>] [--api-url <address>] [--dir <folder>]
+  ace-kit sync [--site <domain>] [--dir <folder>]
 
 It finds every *.schema.ts file in the folder (src and app by default), checks them, and makes the CMS's section types for your
 site match. The dev server does this for you whenever a schema file is saved; run it yourself for a one-off sync, or on a
@@ -23,9 +23,8 @@ Nothing is deleted: a section type, block or field you take out of your code is 
 written in it survives. If any schema file can't be loaded, nothing is synced.
 
 Options:
-  --site      The domain your site has in the CMS, e.g. example.com (default: ACE_SITE_DOMAIN, else localhost).
+  --site      The domain your site has in the CMS, e.g. example.com (or set ACE_SITE_DOMAIN).
               (--domain means the same.)
-  --api-url   Where the CMS Ace API lives (default: ACE_API_URL, else the hosted CMS Ace). Only for a CMS on your own machine.
   --dir       The folder to look in (default: src and app).
   --help      Show this message.
 `;
@@ -101,7 +100,7 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
     now: environment.now,
   });
   if (!login) {
-    environment.out(`Section sync is waiting for you to sign in. Run: npx ace-kit login --api-url ${apiUrl}`);
+    environment.out(`Section sync is waiting for you to sign in. Run: ${loginCommandFor(apiUrl)}`);
     return automatic ? 0 : 1;
   }
 
@@ -125,18 +124,18 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
       const defined = outcome.sections.filter((section) => !section.retired).map((section) => section.handle);
       const retired = outcome.sections.filter((section) => section.retired).map((section) => section.handle);
       environment.out(
-        `Synced ${defined.length} section type${defined.length === 1 ? "" : "s"} (${defined.join(", ")}) to ${outcome.site.domain} (${apiUrl}).` +
+        `Synced ${defined.length} section type${defined.length === 1 ? "" : "s"} (${defined.join(", ")}) to ${outcome.site.domain}${apiUrl === hostedApiUrl ? "" : ` (${apiUrl})`}.` +
           (retired.length > 0 ? ` No longer in your code, kept but hidden: ${retired.join(", ")}.` : ""),
       );
       for (const warning of outcome.warnings) environment.error(`Warning: ${warning}`);
       return 0;
     }
     case "login-ended":
-      environment.out(`Your login has ended. Run: npx ace-kit login --api-url ${apiUrl}`);
+      environment.out(`Your login has ended. Run: ${loginCommandFor(apiUrl)}`);
       return automatic ? 0 : 1;
     case "site-not-found":
       environment.error(
-        `The CMS at ${apiUrl} has no site with the domain "${outcome.domain}" that you can see` +
+        `${cmsName(apiUrl)} has no site with the domain "${outcome.domain}" that you can see` +
           (outcome.available.length > 0 ? ` (your sites: ${outcome.available.join(", ")})` : "") +
           ". Set ACE_SITE_DOMAIN or pass --site.",
       );
@@ -146,7 +145,7 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
       environment.error(outcome.message);
       return 1;
     case "unreachable":
-      environment.error(`Could not reach the CMS at ${apiUrl}.`);
+      environment.error(`Could not reach ${cmsName(apiUrl)}.`);
       return 1;
   }
 }

@@ -11,11 +11,10 @@ import type { CliEnvironment } from "./environment";
 export const generateUsage = `ace-kit generate: write TypeScript types for your CMS Ace content types.
 
 Usage:
-  ace-kit generate [--site <domain>] [--api-url <address>] [--out <file>]
+  ace-kit generate [--site <domain>] [--out <file>]
 
 Options:
   --site      The domain your site has in the CMS, e.g. example.com (or set ACE_SITE_DOMAIN). --domain means the same.
-  --api-url   Where the CMS Ace API lives (or set ACE_API_URL). Only for a CMS on your own machine.
   --out       Where to write the types (default: src/ace-kit.generated.d.ts).
   --help      Show this message.
 `;

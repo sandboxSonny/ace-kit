@@ -7,13 +7,13 @@ import { resolveLogin } from "../auth/resolve-login";
 import { domainFromSite, hostedApiUrl } from "../helpers/platform";
 import { findSchemaFiles } from "../sections/find-schemas";
 import { loadSchemas } from "../sections/load-schemas";
-import { isLocalApiUrl } from "./api-url";
+import { isLocalApiUrl, loginCommandFor } from "./api-url";
 import type { CliEnvironment } from "./environment";
 
 export const doctorUsage = `ace-kit doctor: check that this site is set up to work with CMS Ace.
 
 Usage:
-  ace-kit doctor [--site <domain>] [--api-url <address>] [--dir <folder>]
+  ace-kit doctor [--site <domain>] [--dir <folder>]
 
 Run it in your site's folder. It changes nothing and never prints your login. It checks your Node version, that Ace Kit
 is installed, which CMS and site the settings point at, that the CMS can be reached and knows the site, that you are
@@ -22,7 +22,6 @@ says what to do. It exits with 1 if anything is wrong.
 
 Options:
   --site      The domain your site has in the CMS (default: ACE_SITE_DOMAIN, else Astro's \`site\` setting).
-  --api-url   Where the CMS Ace API lives (default: ACE_API_URL, else the hosted CMS Ace).
   --dir       The folder holding your *.schema.ts files (default: src and app).
   --help      Show this message.
 `;
@@ -137,7 +136,7 @@ export async function doctorCommand(commandArguments: string[], environment: Cli
   let apiUrl: string | null = null;
   try {
     apiUrl = normaliseApiUrl(values["api-url"] ?? environment.variables.ACE_API_URL ?? hostedApiUrl);
-    add("ok", `CMS: ${apiUrl}${apiUrl === hostedApiUrl ? " (the hosted CMS Ace)" : ""}`);
+    add("ok", apiUrl === hostedApiUrl ? "Connected to CMS Ace" : `CMS: ${apiUrl}`);
   } catch (error) {
     add("fail", `The CMS address is wrong: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -184,7 +183,7 @@ export async function doctorCommand(commandArguments: string[], environment: Cli
       );
       return;
     }
-    add("ok", "The CMS answers");
+    add("ok", "CMS Ace answers");
     if (!siteDomain) return;
 
     const asSite = { "X-Ace-Site-Domain": siteDomain };
@@ -236,11 +235,7 @@ export async function doctorCommand(commandArguments: string[], environment: Cli
       now: environment.now,
     });
     if (!login) {
-      add(
-        "warn",
-        "Not signed in",
-        `Run: npx ace-kit login${isLocalApiUrl(address) ? ` --api-url ${address}` : ""}. Section sync and dev sites need it.`,
-      );
+      add("warn", "Not signed in", `Run: ${loginCommandFor(address)}. Section sync and dev sites need it.`);
       return;
     }
     const authorised = { Authorization: `Bearer ${login.token}` };
