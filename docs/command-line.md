@@ -7,6 +7,7 @@ npx @sandboxsonny/ace-kit create my-site --site my-site.com   # make a new site 
 npx ace-kit login      # sign in
 npx ace-kit whoami     # who am I signed in as?
 npx ace-kit logout     # sign out
+npx ace-kit doctor     # check this site is set up properly (see Checking a site)
 npx ace-kit generate   # write TypeScript types (see Typed content)
 npx ace-kit sync       # send your section types to the CMS (see Sections)
 ```
@@ -40,6 +41,30 @@ Your account must be a **partner or super admin** (only they can make sites). Th
 Against a CMS on your own machine (`--api-url` or `ACE_API_URL` set to `http://localhost:8080`), it also writes a `.env` in the new folder with `ACE_API_URL` and `ACE_PREVIEW_ADMIN_ORIGIN=http://localhost:5173`, and sets the site's Preview address to the local dev server (`http://localhost:4321`, or 4322 for React Router), so the site and live preview work with no more setup. Against the hosted CMS Ace none of that is needed.
 
 The folder must not exist yet (or must be empty). The starter is a small server-rendered site with a header, footer, rich text, live preview and Prettier, ESLint, tests and a CI workflow. When it finishes: `cd my-site`, `npm install`, `npm run dev`.
+
+## Checking a site
+
+```sh
+npx ace-kit doctor
+```
+
+Run it in your site's folder when something isn't working. It changes nothing, never prints your login, and says what to do about each problem:
+
+```
+  ✓ Node 24.14.0
+  ✓ An Astro site
+  ✓ Ace Kit 0.6.0 is installed
+  ✓ CMS: https://api.ace-cms.co.uk (the hosted CMS Ace)
+  ✓ Site: shop.example.com
+  ✓ The CMS answers
+  ✓ The CMS knows the site: "Shop"
+  ✓ Pages has 3 published entries, including home
+  ✓ Signed in as sam@example.com
+  ✓ 3 section types in your code (faq, gallery, hero)
+  ✓ The CMS has all of them
+```
+
+It checks your Node version, that Ace Kit is installed, which CMS and site your settings point at, that the CMS can be reached and knows the site, that the site has its Pages content, that you are signed in, the site's preview address, and that the section types in your code match the CMS. `✗` is a problem (the command exits with 1), `!` is a warning, `-` is a note. It takes `--site`, `--api-url` and `--dir` like `sync`.
 
 ## Signing in
 
