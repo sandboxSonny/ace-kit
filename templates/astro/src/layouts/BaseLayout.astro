@@ -1,17 +1,22 @@
 ---
 import AcePreviewRefresh from "@sandboxsonny/ace-kit/astro/AcePreviewRefresh.astro";
+import AceSeo from "@sandboxsonny/ace-kit/astro/AceSeo.astro";
+import type { AceEntry } from "@sandboxsonny/ace-kit";
 import SiteFooter from "~/components/SiteFooter.astro";
 import SiteHeader from "~/components/SiteHeader.astro";
 import "~/styles/global.css";
 
 type Props = {
+  /** The entry the page shows: its SEO title and description fill the page's search and sharing tags. */
+  entry?: AceEntry;
+  /** Used when there is no entry (a notice page), and when an entry has no title of its own. */
   title: string;
   description?: string;
   /** True when the page is showing a draft inside the CMS's preview frame. */
   preview?: boolean;
 };
 
-const { title, description = "A simple example site for testing CMS Ace.", preview = false } = Astro.props;
+const { entry, title, description = "A simple example site for testing CMS Ace.", preview = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -19,11 +24,17 @@ const { title, description = "A simple example site for testing CMS Ace.", previ
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
-    {preview && <meta name="robots" content="noindex" />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{title}</title>
+    {/* Title, description, canonical address, robots and sharing tags. A draft shown in preview is kept out of search. */}
+    <AceSeo
+      entry={entry}
+      {title}
+      {description}
+      siteName="Example Site"
+
+      noindex={preview}
+    />
   </head>
   <body>
     <SiteHeader />

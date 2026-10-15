@@ -1,0 +1,12 @@
+---
+import { SEO } from "astro-seo";
+
+import { seoProperties } from "../dist/index.js";
+import type { AceSeoOptions } from "../dist/index.js";
+
+type Props = AceSeoOptions;
+
+const properties = seoProperties(Astro.props);
+---
+
+<SEO {...properties} />

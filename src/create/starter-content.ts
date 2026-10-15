@@ -9,7 +9,10 @@ const richText = (text: string) => ({
 /** Which starters draw sections (they all have components for the hero, FAQ and gallery). */
 export const frameworksWithSections: readonly Framework[] = ["astro", "react-router"];
 
-/** The fields of the `pages` content type the starter's pages read. `sections` is left out for a starter without them. */
+/**
+ * The fields of the `pages` content type the starter's pages read. `sections` is left out for a starter without them.
+ * The CMS adds the SEO title and description to every content type, so they aren't listed here; the entries below fill them in.
+ */
 export function pageFields(framework: Framework) {
   const fields = [
     { componentKey: "text", label: "Headline", handle: "headline", config: { required: true } },
@@ -42,6 +45,8 @@ export function starterEntries(framework: Framework, siteName: string): StarterE
       title: "Home",
       description: `Welcome to ${siteName}.`,
       values: {
+        "seo-title": `${siteName} | Welcome`,
+        "seo-description": `Welcome to ${siteName}.`,
         headline: `Welcome to ${siteName}`,
         body: richText(
           "Edit this text in the CMS and reload the page to see it change.\n\nPages are rendered on each request, so there is nothing to rebuild.",
@@ -100,6 +105,8 @@ export function starterEntries(framework: Framework, siteName: string): StarterE
       title: "About",
       description: `About ${siteName}.`,
       values: {
+        "seo-title": `About | ${siteName}`,
+        "seo-description": `About ${siteName}.`,
         headline: "About",
         body: richText(
           "Say who you are and what you do.\n\nThis text is an entry in the CMS: editing it there changes this page.",
@@ -117,6 +124,8 @@ export function starterEntries(framework: Framework, siteName: string): StarterE
       title: "Contact",
       description: `How to reach ${siteName}.`,
       values: {
+        "seo-title": `Contact | ${siteName}`,
+        "seo-description": `How to reach ${siteName}.`,
         headline: "Contact",
         body: richText("Tell people how to get in touch."),
         // A link to another entry of the site: it needs About's ID, which exists by now.

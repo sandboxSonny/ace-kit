@@ -38,6 +38,8 @@ export {
   swapPageContent,
 } from "./helpers/preview";
 export { listenForPreviewRefresh, refreshPageContent } from "./helpers/preview-listener";
+export { seoDescriptionHandle, seoProperties, seoTitleHandle } from "./helpers/seo";
+export type { AceSeoOptions, AceSeoProperties } from "./helpers/seo";
 export { renderTextArea } from "./helpers/text-area";
 export { headingLevel, listStart, renderRichText, richTextImageSizes } from "./helpers/rich-text";
 
