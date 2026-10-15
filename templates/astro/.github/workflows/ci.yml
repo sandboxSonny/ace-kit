@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # Matches the Dockerfile's node:24-alpine, so CI tests what production runs.
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Format, lint, types, tests and a build.
+      - run: npm run check

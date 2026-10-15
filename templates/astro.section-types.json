@@ -1,0 +1,109 @@
+{
+  "sections": [
+    {
+      "handle": "faq",
+      "name": "FAQ",
+      "fields": [
+        {
+          "handle": "heading",
+          "label": "Heading",
+          "component_key": "text",
+          "config": {}
+        }
+      ],
+      "blocks": [
+        {
+          "handle": "question",
+          "name": "Question",
+          "fields": [
+            {
+              "handle": "question",
+              "label": "Question",
+              "component_key": "text",
+              "config": {
+                "required": true
+              }
+            },
+            {
+              "handle": "answer",
+              "label": "Answer",
+              "component_key": "richtext",
+              "config": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "handle": "gallery",
+      "name": "Gallery",
+      "fields": [
+        {
+          "handle": "heading",
+          "label": "Heading",
+          "component_key": "text",
+          "config": {}
+        },
+        {
+          "handle": "published",
+          "label": "Published",
+          "component_key": "date",
+          "config": {}
+        }
+      ],
+      "blocks": [
+        {
+          "handle": "photo",
+          "name": "Photo",
+          "fields": [
+            {
+              "handle": "image",
+              "label": "Image",
+              "component_key": "image",
+              "config": {}
+            },
+            {
+              "handle": "caption",
+              "label": "Caption",
+              "component_key": "text",
+              "config": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "handle": "hero",
+      "name": "Hero",
+      "fields": [
+        {
+          "handle": "heading",
+          "label": "Heading",
+          "component_key": "text",
+          "config": {
+            "required": true
+          }
+        },
+        {
+          "handle": "subheading",
+          "label": "Subheading",
+          "component_key": "textarea",
+          "config": {}
+        },
+        {
+          "handle": "picture",
+          "label": "Picture",
+          "component_key": "image",
+          "config": {}
+        },
+        {
+          "handle": "button",
+          "label": "Button",
+          "component_key": "link",
+          "config": {}
+        }
+      ],
+      "blocks": []
+    }
+  ]
+}

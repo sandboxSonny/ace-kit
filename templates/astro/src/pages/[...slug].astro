@@ -1,0 +1,31 @@
+---
+import { getPage } from "@sandboxsonny/ace-kit/astro";
+import AceNotice from "@sandboxsonny/ace-kit/astro/AceNotice.astro";
+
+import PageContent from "~/components/PageContent.astro";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import type { PageValues } from "~/types/page";
+
+// Addresses are /{content type}/{entry}, as on Shopify: "/pages/about" is the entry "about" of the content type
+// "pages", and "/" is the home entry. getPage works out what to show and sets the status and headers.
+const page = await getPage<PageValues>(Astro);
+if (page.kind === "redirect") return Astro.redirect(page.location, page.status);
+
+const isPreview = Boolean(page.headers["Cache-Control"]);
+---
+
+{page.kind === "entry" ? (
+  <BaseLayout
+    title={`${page.entry.title} | Example Site`}
+    description={page.entry.description || undefined}
+    preview={isPreview}
+  >
+    <PageContent entry={page.entry} />
+  </BaseLayout>
+) : (
+  <BaseLayout title="Example Site" preview={isPreview}>
+    <section class="section">
+      <AceNotice page={page} class="container" />
+    </section>
+  </BaseLayout>
+)}

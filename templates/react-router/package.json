@@ -1,0 +1,51 @@
+{
+  "name": "example-react-router-site",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "react-router dev --port 4322",
+    "build": "react-router build",
+    "start": "react-router-serve ./build/server/index.js",
+    "generate": "ace-kit generate --out app/ace-kit.generated.d.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "react-router typegen && tsc",
+    "test": "vitest run",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@sandboxsonny/ace-kit": "file:../ace-kit",
+    "@react-router/node": "^7.18.4",
+    "@react-router/serve": "^7.18.4",
+    "isbot": "^5.2.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^7.18.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@react-router/dev": "^7.18.4",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  }
+}

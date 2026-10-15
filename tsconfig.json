@@ -14,5 +14,5 @@
     "types": ["node"]
   },
   "include": ["src", "stories", "scripts", "*.ts", ".storybook"],
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules", "templates"]
 }

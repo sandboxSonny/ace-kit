@@ -1,0 +1,113 @@
+---
+import AceImage from "@sandboxsonny/ace-kit/astro/AceImage.astro";
+import AceLink from "@sandboxsonny/ace-kit/astro/AceLink.astro";
+import AceRichText from "@sandboxsonny/ace-kit/astro/AceRichText.astro";
+import AceTextArea from "@sandboxsonny/ace-kit/astro/AceTextArea.astro";
+import { formatAceDate } from "@sandboxsonny/ace-kit";
+import type { AceEntry } from "@sandboxsonny/ace-kit";
+
+import AceSections from "@sandboxsonny/ace-kit/astro/AceSections.astro";
+
+import Faq from "~/components/sections/Faq.astro";
+import Gallery from "~/components/sections/Gallery.astro";
+import Hero from "~/components/sections/Hero.astro";
+
+import type { PageValues } from "~/types/page";
+
+type Props = {
+  entry: AceEntry<PageValues>;
+};
+
+const { entry } = Astro.props;
+const { headline, body, hero, published, button, content } = entry.values;
+---
+
+<section class="section">
+  <div class="container prose">
+    <h1>{headline || entry.title}</h1>
+    {entry.description && <p class="intro">{entry.description}</p>}
+    {
+      // A date field is a day with no time of day, so it is the same day wherever the server runs.
+      published && (
+        <p class="published">
+          Published <time datetime={published}>{formatAceDate(published, { locale: "en-GB" }) ?? published}</time>
+        </p>
+      )
+    }
+    {hero && (
+      <figure>
+        <AceImage image={hero} sizes="(min-width: 64rem) 64rem, 100vw" lazy={false} />
+      </figure>
+    )}
+    {
+      // A site made before its Body field was rich text still has plain text, with blank lines between paragraphs.
+      typeof body === "string" ? (
+        <AceTextArea value={body} />
+      ) : body ? (
+        <div class="rich-text">
+          <AceRichText document={body} />
+        </div>
+      ) : null
+    }
+    {
+      // A link field: the editor's words and where it goes, already worked out by the CMS.
+      button && (
+        <p class="actions">
+          <AceLink link={button} class="button" />
+        </p>
+      )
+    }
+  </div>
+</section>
+<AceSections sections={content} components={{ hero: Hero, faq: Faq, gallery: Gallery }} />
+<style>
+  .prose {
+    max-width: 42rem;
+  }
+  .intro {
+    color: var(--colour-muted);
+    font-size: 1.125rem;
+  }
+  .published {
+    color: var(--colour-muted);
+    font-size: 0.9rem;
+  }
+  .actions {
+    margin-top: 2rem;
+  }
+  figure {
+    margin: 2rem 0;
+  }
+  figure :global(img) {
+    border-radius: 0.5rem;
+  }
+  .rich-text :global(* + *) {
+    margin-top: 1rem;
+  }
+  .rich-text :global(h2) {
+    font-size: 1.75rem;
+  }
+  .rich-text :global(h3) {
+    font-size: 1.4rem;
+  }
+  .rich-text :global(h4) {
+    font-size: 1.15rem;
+  }
+  .rich-text :global(ul) {
+    list-style: disc;
+    padding-left: 1.5rem;
+  }
+  .rich-text :global(ol) {
+    list-style: decimal;
+    padding-left: 1.5rem;
+  }
+  .rich-text :global(blockquote) {
+    border-left: 4px solid var(--colour-muted);
+    padding-left: 1rem;
+    font-style: italic;
+  }
+  .rich-text :global(img) {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
