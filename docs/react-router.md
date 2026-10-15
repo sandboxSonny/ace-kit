@@ -26,13 +26,11 @@ export default defineConfig({ plugins: [ace(), reactRouter()] });
 
 The settings are environment variables, read when the server starts, so one build runs anywhere. Put them in `.env` for development and in the host's environment for production:
 
-| Variable                   | Default                     | Meaning                                                   |
-| -------------------------- | --------------------------- | --------------------------------------------------------- |
-| `ACE_API_URL`              | `https://api.ace-cms.co.uk` | where the CMS Ace API lives                               |
-| `ACE_SITE_DOMAIN`          | `localhost`                 | the domain this site has in the CMS (the port is ignored) |
-| `ACE_PREVIEW_ADMIN_ORIGIN` | `https://app.ace-cms.co.uk` | where the CMS admin app runs                              |
+| Variable          | Default     | Meaning                                                   |
+| ----------------- | ----------- | --------------------------------------------------------- |
+| `ACE_SITE_DOMAIN` | `localhost` | the domain this site has in the CMS (the port is ignored) |
 
-CMS Ace is a hosted platform, so a site normally sets only `ACE_SITE_DOMAIN`. Set the other two only to use a CMS on your own machine (`http://localhost:8080` and `http://localhost:5173`).
+A site connects to CMS Ace by itself and only needs to say which site it is, with `ACE_SITE_DOMAIN`.
 
 **2. The server entry**, which renders pages and lets the CMS's admin app (and only it) frame the site for [live preview](./live-preview.md):
 

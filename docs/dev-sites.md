@@ -34,7 +34,7 @@ A dev site is never merged into the live site. When your change is ready, deploy
 
 ## If something stops it
 
-The dev server says so once, and carries on showing the **live site**, read-only, with section sync off: you aren't signed in (run `npx ace-kit login --api-url <address>`), your account can't have a dev site, the site isn't one you can see, or the CMS can't be reached.
+The dev server says so once, and carries on showing the **live site**, read-only, with section sync off: you aren't signed in (run `npx ace-kit login`), your account can't have a dev site, the site isn't one you can see, or the CMS can't be reached.
 
 ## Housekeeping
 

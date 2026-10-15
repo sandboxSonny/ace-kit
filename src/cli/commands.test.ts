@@ -294,13 +294,47 @@ describe("ace-kit", () => {
     expect(errors.join()).toContain('Unknown command "deploy"');
   });
 
-  it("shows each command's help without doing anything", async () => {
-    for (const command of ["generate", "login", "logout", "whoami"]) {
+  it("shows each command's help without doing anything, and never mentions where the CMS lives", async () => {
+    for (const command of ["create", "doctor", "generate", "login", "logout", "whoami", "sync"]) {
       const { environment, output, requests } = fakeEnvironment();
       expect(await runCli([command, "--help"], environment), command).toBe(0);
-      expect(output.join()).toContain("--api-url");
+      const help = output.join("\n");
+      // The address is a setting for people working on CMS Ace itself: it works, but it isn't advertised.
+      expect(help, command).not.toMatch(/api-url|ACE_API_URL|localhost|8080/i);
       expect(requests).toEqual([]);
     }
+    const { environment, output } = fakeEnvironment();
+    await runCli(["--help"], environment);
+    expect(output.join("\n")).not.toMatch(/api-url|ACE_API_URL|localhost/i);
+  });
+
+  it("still takes --api-url, for a CMS on your own machine", async () => {
+    const other = "http://localhost:9999";
+    const { environment, requests, store } = fakeEnvironment({
+      [`GET ${other}/auth/me`]: () => json({ email: "a@b.co" }),
+    });
+    store.items[other] = { token: "t", email: "a@b.co", expiresAt: "2027-01-01T00:00:00Z" };
+    expect(await runCli(["whoami", "--api-url", other], environment)).toBe(0);
+    expect(requests[0]?.address).toBe(`${other}/auth/me`);
+  });
+
+  it("talks about CMS Ace, not an address, when it is the hosted one", async () => {
+    const hosted = "https://api.ace-cms.co.uk";
+    const variables = { ACE_API_URL: hosted };
+
+    const signedIn = fakeEnvironment({ [`GET ${hosted}/auth/me`]: () => json({ email: "a@b.co" }) }, { variables });
+    signedIn.store.items[hosted] = { token: "t", email: "a@b.co", expiresAt: "2027-01-01T00:00:00Z" };
+    expect(await runCli(["whoami"], signedIn.environment)).toBe(0);
+    expect(signedIn.output.join("\n")).toBe("Signed in to CMS Ace as a@b.co, using the login in the test store.");
+
+    const signedOut = fakeEnvironment({}, { variables });
+    expect(await runCli(["whoami"], signedOut.environment)).toBe(1);
+    expect(signedOut.output.join("\n")).toBe("Not signed in to CMS Ace. Run: ace-kit login");
+
+    const loggingIn = fakeEnvironment(loginRoutesAt(hosted), { variables });
+    expect(await runCli(["login"], loggingIn.environment)).toBe(0);
+    expect(loggingIn.output.join("\n")).toContain("Signing in to CMS Ace\n");
+    expect(loggingIn.output.join("\n")).not.toContain("api.ace-cms.co.uk");
   });
 });
 

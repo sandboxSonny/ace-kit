@@ -12,7 +12,7 @@ npx ace-kit generate   # write TypeScript types (see Typed content)
 npx ace-kit sync       # send your section types to the CMS (see Sections)
 ```
 
-Commands talk to the hosted CMS Ace unless told otherwise. Only for a CMS on your own machine, give `--api-url`, or set `ACE_API_URL` in the environment or a `.env` file in the folder you run it in. Failing both, a command uses the address you last signed in to (kept in a small file beside your logins), and failing that the hosted one, so `ace-kit login` and `ace-kit whoami` need no flags at all. Commands about a site (`sync`, `generate`) take `--site example.com`, or read `ACE_SITE_DOMAIN`.
+Commands connect to CMS Ace for you, so `ace-kit login` and `ace-kit whoami` need no flags at all. Commands about a site (`sync`, `generate`, `doctor`) take `--site example.com`, or read `ACE_SITE_DOMAIN`.
 
 ## Making a site
 
@@ -36,9 +36,6 @@ Your account must be a **partner or super admin** (only they can make sites). Th
 | `<domain>` (or `--site <domain>`) | The domain the site has in CMS Ace. Required.                                         |
 | `--framework astro\|react-router` | `astro` (the default) or `react-router`. Both have the same three example sections.   |
 | `--name <name>`                   | The name shown to visitors. Default: made from the folder, so `my-site` is "My Site". |
-| `--api-url <address>`             | Only for a CMS on your own machine (or set `ACE_API_URL`).                            |
-
-Against a CMS on your own machine (`--api-url` or `ACE_API_URL` set to `http://localhost:8080`), it also writes a `.env` in the new folder with `ACE_API_URL` and `ACE_PREVIEW_ADMIN_ORIGIN=http://localhost:5173`, and sets the site's Preview address to the local dev server (`http://localhost:4321`, or 4322 for React Router), so the site and live preview work with no more setup. Against the hosted CMS Ace none of that is needed.
 
 The folder must not exist yet (or must be empty). The starter is a small server-rendered site with a header, footer, rich text, live preview and Prettier, ESLint, tests and a CI workflow. When it finishes: `cd my-site`, `npm install`, `npm run dev`.
 
@@ -64,7 +61,7 @@ Run it in your site's folder when something isn't working. It changes nothing, n
   ✓ The CMS has all of them
 ```
 
-It checks your Node version, that Ace Kit is installed, which CMS and site your settings point at, that the CMS can be reached and knows the site, that the site has its Pages content, that you are signed in, the site's preview address, and that the section types in your code match the CMS. `✗` is a problem (the command exits with 1), `!` is a warning, `-` is a note. It takes `--site`, `--api-url` and `--dir` like `sync`.
+It checks your Node version, that Ace Kit is installed, which CMS and site your settings point at, that the CMS can be reached and knows the site, that the site has its Pages content, that you are signed in, the site's preview address, and that the section types in your code match the CMS. `✗` is a problem (the command exits with 1), `!` is a warning, `-` is a note. It takes `--site` and `--dir` like `sync`.
 
 ## Signing in
 

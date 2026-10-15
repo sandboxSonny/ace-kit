@@ -2,20 +2,19 @@ import { parseArgs } from "node:util";
 
 import { DeviceLoginError, startDeviceLogin, waitForApproval } from "../auth/device-login";
 import { resolveLogin } from "../auth/resolve-login";
-import { isLocalApiUrl, resolveApiUrl } from "./api-url";
+import { cmsLabel, cmsName, isLocalApiUrl, loginCommandFor, resolveApiUrl } from "./api-url";
 import type { StoredLogin } from "../auth/login-store";
 import type { CliEnvironment } from "./environment";
 
 export const loginUsage = `ace-kit login: sign in to CMS Ace from the command line.
 
 Usage:
-  ace-kit login  [--api-url <address>]    Sign in. Opens the admin app, where you type the code shown here.
-  ace-kit logout [--api-url <address>]    Sign out, and forget the login kept on this machine.
-  ace-kit whoami [--api-url <address>]    Say who you are signed in as.
+  ace-kit login    Sign in. Opens the admin app, where you type the code shown here.
+  ace-kit logout   Sign out, and forget the login kept on this machine.
+  ace-kit whoami   Say who you are signed in as.
 
 Options:
-  --api-url   Where the CMS Ace API lives (or set ACE_API_URL, in the environment or a .env file).
-  --help      Show this message.
+  --help   Show this message.
 
 The login is kept in the macOS Keychain, or in a file only you can read on other systems. On a build server,
 where nobody can approve a login in a browser, set ACE_TOKEN instead.
@@ -58,7 +57,7 @@ export async function loginCommand(commandArguments: string[], environment: CliE
   const { apiUrl } = read;
   if (apiUrl.startsWith("http://") && !isLocalApiUrl(apiUrl)) {
     environment.error(
-      `Warning: ${apiUrl} is not encrypted (http://), so the login could be read on the way. Use https:// if you can.`,
+      `Warning: ${cmsName(apiUrl)} is not encrypted (http://), so the login could be read on the way. Use https:// if you can.`,
     );
   }
 
@@ -88,7 +87,7 @@ export async function signIn(apiUrl: string, environment: CliEnvironment): Promi
       "The CMS sent an approval address that isn't a web address, so it was not opened.",
     );
 
-  environment.out(`Signing in to ${apiUrl}\n`);
+  environment.out(`Signing in to ${cmsLabel(apiUrl)}\n`);
   environment.out(`  1. Go to   ${page}`);
   environment.out(`  2. Type    ${request.userCode}\n`);
   environment.out("Check the code on that page matches. Waiting for you to approve it (Ctrl-C to cancel)...");
@@ -120,7 +119,7 @@ export async function logoutCommand(commandArguments: string[], environment: Cli
 
   const stored = await environment.store.read(apiUrl);
   if (!stored) {
-    environment.out(`Not signed in to ${apiUrl}.`);
+    environment.out(`Not signed in to ${cmsLabel(apiUrl)}.`);
     return 0;
   }
   // The CMS is told so the login ends there too, not just here. If that can't be done the login is still forgotten.
@@ -137,8 +136,8 @@ export async function logoutCommand(commandArguments: string[], environment: Cli
   await environment.store.remove(apiUrl);
   environment.out(
     ended
-      ? `Signed out of ${apiUrl}.`
-      : `Forgot the login for ${apiUrl} on this machine, but could not reach the CMS to end it there. It ends by itself after 30 days unused; a super admin can also end it from the Sessions screen.`,
+      ? `Signed out of ${cmsLabel(apiUrl)}.`
+      : `Forgot the login for ${cmsLabel(apiUrl)} on this machine, but could not reach the CMS to end it there. It ends by itself after 30 days unused; a super admin can also end it from the Sessions screen.`,
   );
   return 0;
 }
@@ -159,7 +158,7 @@ export async function whoamiCommand(commandArguments: string[], environment: Cli
     now: environment.now,
   });
   if (!login) {
-    environment.out(`Not signed in to ${apiUrl}. Run: ace-kit login`);
+    environment.out(`Not signed in to ${cmsLabel(apiUrl)}. Run: ${loginCommandFor(apiUrl).replace("npx ", "")}`);
     return 1;
   }
   try {
@@ -176,10 +175,10 @@ export async function whoamiCommand(commandArguments: string[], environment: Cli
       return 1;
     }
     const me = (await response.json()) as { email?: unknown };
-    environment.out(`Signed in to ${apiUrl} as ${String(me.email)}, using the login in ${login.source}.`);
+    environment.out(`Signed in to ${cmsLabel(apiUrl)} as ${String(me.email)}, using the login in ${login.source}.`);
     return 0;
   } catch {
-    environment.error(`Could not reach the CMS at ${apiUrl}.`);
+    environment.error(`Could not reach ${cmsName(apiUrl)}.`);
     return 1;
   }
 }
