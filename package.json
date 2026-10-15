@@ -105,7 +105,8 @@
     "react-router": ">=7",
     "react-dom": ">=18",
     "@react-router/node": ">=7",
-    "vite": ">=5"
+    "vite": ">=5",
+    "astro-seo": ">=1"
   },
   "peerDependenciesMeta": {
     "astro": {
@@ -125,6 +126,9 @@
     },
     "vite": {
       "optional": true
+    },
+    "astro-seo": {
+      "optional": true
     }
   },
   "devDependencies": {
@@ -139,6 +143,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "astro": "^7.3.8",
+    "astro-seo": "^1.2.0",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-astro": "^1.7.0",

@@ -15,11 +15,7 @@ const isPreview = Boolean(page.headers["Cache-Control"]);
 ---
 
 {page.kind === "entry" ? (
-  <BaseLayout
-    title={`${page.entry.title} | Example Site`}
-    description={page.entry.description || undefined}
-    preview={isPreview}
-  >
+  <BaseLayout entry={page.entry} title={page.entry.title} preview={isPreview}>
     <PageContent entry={page.entry} />
   </BaseLayout>
 ) : (

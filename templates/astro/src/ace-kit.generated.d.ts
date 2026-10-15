@@ -17,6 +17,10 @@ declare module "@sandboxsonny/ace-kit" {
       "button"?: AceLinkData;
       /** Content */
       "content"?: AceSection[];
+      /** SEO title */
+      "seo-title": string;
+      /** SEO description */
+      "seo-description": string;
     };
   }
 }
