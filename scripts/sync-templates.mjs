@@ -42,6 +42,9 @@ async function listFiles(folder, base = folder) {
   const files = [];
   for (const entry of await readdir(folder, { withFileTypes: true })) {
     if (isSkipped(entry.name)) continue;
+    // A link (the example's CLAUDE.md points at AGENTS.md) would be copied pointing at a path on this machine, and npm
+    // doesn't publish links at all, so a starter has none.
+    if (entry.isSymbolicLink()) continue;
     const path = join(folder, entry.name);
     if (entry.isDirectory()) files.push(...(await listFiles(path, base)));
     else files.push(relative(base, path));

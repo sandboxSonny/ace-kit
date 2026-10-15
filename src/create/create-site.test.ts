@@ -37,6 +37,21 @@ async function allFiles(folder: string, base = folder): Promise<string[]> {
   return files;
 }
 
+describe("the starters", () => {
+  it("contain no symbolic links: they would copy as links to this machine, and npm does not publish them", async () => {
+    const links: string[] = [];
+    const walk = async (folder: string) => {
+      for (const entry of await readdir(folder, { withFileTypes: true })) {
+        const path = join(folder, entry.name);
+        if (entry.isSymbolicLink()) links.push(path);
+        else if (entry.isDirectory()) await walk(path);
+      }
+    };
+    await walk(templatesDirectory);
+    expect(links).toEqual([]);
+  });
+});
+
 describe("names", () => {
   it("makes a readable name and a package name from the folder", () => {
     expect(nameFromFolder("/x/my-shop")).toBe("My Shop");
