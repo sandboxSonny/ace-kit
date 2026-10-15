@@ -37,6 +37,7 @@ export function fakeEnvironment(routes: Routes = {}, overrides: Partial<CliEnvir
     platform: "darwin",
     hostname: "sonnys-macbook",
     version: "0.3.0",
+    nodeVersion: "24.14.0",
     out: (text) => output.push(text),
     error: (text) => errors.push(text),
     fetchImplementation: async (input, init) => {

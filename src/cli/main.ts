@@ -1,4 +1,5 @@
 import { createCommand, createUsage } from "./create-command";
+import { doctorCommand, doctorUsage } from "./doctor-command";
 import type { CliEnvironment } from "./environment";
 import { generateCommand, generateUsage } from "./generate-command";
 import { loginCommand, loginUsage, logoutCommand, whoamiCommand } from "./login-commands";
@@ -8,6 +9,7 @@ const usage = `ace-kit: tools for sites built on CMS Ace.
 
 Commands:
   ace-kit create     Make a new site from a starter.
+  ace-kit doctor     Check this site is set up to work with CMS Ace.
   ace-kit generate   Write TypeScript types for your content types.
   ace-kit sync       Send the section types your code defines to the CMS.
   ace-kit login      Sign in from the command line (opens the admin app).
@@ -23,6 +25,8 @@ export async function runCli(commandArguments: string[], environment: CliEnviron
   switch (command) {
     case "create":
       return createCommand(rest, environment);
+    case "doctor":
+      return doctorCommand(rest, environment);
     case "generate":
       return generateCommand(rest, environment);
     case "sync":
@@ -45,4 +49,4 @@ export async function runCli(commandArguments: string[], environment: CliEnviron
   }
 }
 
-export { createUsage, generateUsage, loginUsage, syncUsage };
+export { createUsage, doctorUsage, generateUsage, loginUsage, syncUsage };

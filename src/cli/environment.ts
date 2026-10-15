@@ -16,6 +16,8 @@ export type CliEnvironment = {
   platform: NodeJS.Platform;
   hostname: string;
   version: string;
+  /** The version of Node running the tool, like "24.14.0". */
+  nodeVersion: string;
   out: (text: string) => void;
   error: (text: string) => void;
   fetchImplementation: typeof fetch;
@@ -108,6 +110,7 @@ export async function createRealEnvironment(): Promise<CliEnvironment> {
     platform,
     hostname: hostname(),
     version: aceKitVersion,
+    nodeVersion: process.versions.node,
     out: (text) => process.stdout.write(`${text}\n`),
     error: (text) => console.error(text),
     fetchImplementation: (input, init) => fetch(input, init),
