@@ -1,0 +1,74 @@
+---
+import { formatAceDate } from "@sandboxsonny/ace-kit";
+import AceImage from "@sandboxsonny/ace-kit/astro/AceImage.astro";
+
+import type { SectionOf } from "@sandboxsonny/ace-kit";
+import type gallery from "./Gallery.schema";
+
+type Props = {
+  section: SectionOf<typeof gallery>;
+};
+
+const { section } = Astro.props;
+const { heading, published } = section.values;
+const photos = section.blocks.filter((block) => block.values.image || block.values.caption);
+---
+
+<section class="section" data-section={section.type}>
+  <div class="container">
+    {heading && <h2>{heading}</h2>}
+    {published && (
+      <p class="published">
+        <time datetime={published}>{formatAceDate(published, { locale: "en-GB" }) ?? published}</time>
+      </p>
+    )}
+    {photos.length > 0 ? (
+      <ul class="photos">
+        {photos.map((photo) => (
+          <li>
+            <figure>
+              {photo.values.image && <AceImage image={photo.values.image} sizes="(min-width: 48rem) 20rem, 100vw" />}
+              {photo.values.caption && <figcaption>{photo.values.caption}</figcaption>}
+            </figure>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty">No photos yet.</p>
+    )}
+  </div>
+</section>
+
+<style>
+  h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.75rem;
+  }
+  .published,
+  .empty {
+    margin: 0 0 1rem;
+    color: var(--colour-muted);
+    font-size: 0.9rem;
+  }
+  .photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  figure {
+    margin: 0;
+  }
+  figure :global(img) {
+    border-radius: 0.5rem;
+    width: 100%;
+    object-fit: cover;
+  }
+  figcaption {
+    margin-top: 0.4rem;
+    color: var(--colour-muted);
+    font-size: 0.9rem;
+  }
+</style>

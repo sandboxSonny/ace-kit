@@ -2,6 +2,14 @@
 
 Ace Kit is everything a website needs to use CMS Ace (see the [README](../README.md)): a typed client for the public API, addressing (`/{content type}/{entry}`), responsive images, menus, rich text, live preview support, and thin Astro and React adapters. It has no runtime dependencies.
 
+## Starting from nothing
+
+```sh
+npx @sandboxsonny/ace-kit create my-site my-site.com
+```
+
+makes an Astro (or, with `--framework react-router`, a React Router) site with everything below already wired up. See [the command line](./command-line.md#making-a-site). To add the kit to a site you already have, read on.
+
 ## Install
 
 ```sh

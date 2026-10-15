@@ -1,0 +1,54 @@
+---
+import AceRichText from "@sandboxsonny/ace-kit/astro/AceRichText.astro";
+
+import type { SectionOf } from "@sandboxsonny/ace-kit";
+import type faq from "./Faq.schema";
+
+type Props = {
+  section: SectionOf<typeof faq>;
+};
+
+const { section } = Astro.props;
+const { heading } = section.values;
+---
+
+<section class="section" data-section={section.type}>
+  <div class="container faq">
+    {heading && <h2>{heading}</h2>}
+    {section.blocks.map((block) => (
+      <details>
+        <summary>{block.values.question}</summary>
+        {block.values.answer && (
+          <div class="answer">
+            <AceRichText document={block.values.answer} />
+          </div>
+        )}
+      </details>
+    ))}
+  </div>
+</section>
+
+<style>
+  .faq {
+    max-width: 42rem;
+  }
+  h2 {
+    margin: 0 0 1rem;
+    font-size: 1.75rem;
+  }
+  details {
+    border-bottom: 1px solid var(--colour-surface);
+    padding-block: 0.75rem;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .answer {
+    margin-top: 0.5rem;
+    color: var(--colour-muted);
+  }
+  .answer :global(* + *) {
+    margin-top: 0.75rem;
+  }
+</style>

@@ -1,0 +1,121 @@
+---
+import { isCurrentPage } from "@sandboxsonny/ace-kit";
+import { getMenuLinks } from "@sandboxsonny/ace-kit/astro";
+
+// The CMS menu with the handle "main-menu", or the built-in links if the site has none yet or the CMS can't be reached.
+const links = await getMenuLinks("main-menu", {
+  fallback: [
+    { label: "Home", to: "/" },
+    { label: "About", to: "/pages/about" },
+    { label: "Contact", to: "/pages/contact" },
+  ],
+});
+const { pathname } = Astro.url;
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href="/" class="site-header__name">
+      Example Site
+    </a>
+    <nav aria-label="Main">
+      <ul class="site-header__links">
+        {links.map((link) => (
+          <li>
+            <a href={link.to} aria-current={isCurrentPage(link, pathname) ? "page" : undefined}>
+              {link.label}
+            </a>
+            {link.children && link.children.length > 0 && (
+              <ul class="site-header__sublinks">
+                {link.children.map((child) => (
+                  <li>
+                    <a href={child.to} aria-current={isCurrentPage(child, pathname) ? "page" : undefined}>
+                      {child.label}
+                    </a>
+                    {child.children && child.children.length > 0 && (
+                      <ul class="site-header__sublinks site-header__sublinks--deep">
+                        {child.children.map((grandchild) => (
+                          <li>
+                            <a href={grandchild.to}>{grandchild.label}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--colour-surface);
+  }
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 1rem;
+  }
+  .site-header__name {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--colour-text);
+    text-decoration: none;
+  }
+  .site-header__links {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .site-header__links a {
+    color: var(--colour-muted);
+    text-decoration: none;
+  }
+  .site-header__links > li {
+    position: relative;
+  }
+  .site-header__sublinks {
+    display: none;
+    position: absolute;
+    z-index: 10;
+    top: 100%;
+    left: 0;
+    min-width: 12rem;
+    margin: 0;
+    padding: 0.5rem 0;
+    list-style: none;
+    background: var(--colour-background);
+    border: 1px solid var(--colour-surface);
+    border-radius: 0.5rem;
+  }
+  .site-header__sublinks li {
+    position: relative;
+  }
+  .site-header__sublinks a {
+    display: block;
+    padding: 0.4rem 1rem;
+    white-space: nowrap;
+  }
+  .site-header__sublinks--deep {
+    top: 0;
+    left: 100%;
+  }
+  .site-header__links > li:hover > .site-header__sublinks,
+  .site-header__links > li:focus-within > .site-header__sublinks,
+  .site-header__sublinks li:hover > .site-header__sublinks,
+  .site-header__sublinks li:focus-within > .site-header__sublinks {
+    display: block;
+  }
+  .site-header__links a[aria-current="page"] {
+    color: var(--colour-text);
+    font-weight: 600;
+  }
+</style>

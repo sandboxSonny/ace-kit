@@ -51,6 +51,7 @@ export function fakeEnvironment(routes: Routes = {}, overrides: Partial<CliEnvir
     },
     now: () => current,
     workingDirectory: "/site",
+    templatesDirectory: "/templates",
     importModule: async () => {
       throw new Error("no modules in this environment");
     },

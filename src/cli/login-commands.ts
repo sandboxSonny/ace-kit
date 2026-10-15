@@ -3,6 +3,7 @@ import { parseArgs } from "node:util";
 import { DeviceLoginError, startDeviceLogin, waitForApproval } from "../auth/device-login";
 import { resolveLogin } from "../auth/resolve-login";
 import { isLocalApiUrl, resolveApiUrl } from "./api-url";
+import type { StoredLogin } from "../auth/login-store";
 import type { CliEnvironment } from "./environment";
 
 export const loginUsage = `ace-kit login: sign in to CMS Ace from the command line.
@@ -62,41 +63,50 @@ export async function loginCommand(commandArguments: string[], environment: CliE
   }
 
   try {
-    const request = await startDeviceLogin({
-      fetchImplementation: environment.fetchImplementation,
-      apiUrl,
-      clientName: `ace-kit ${environment.version} on ${environment.hostname}`,
-    });
-    const page = webAddress(request.verificationUri);
-    if (!page)
-      throw new DeviceLoginError(
-        "unsupported",
-        "The CMS sent an approval address that isn't a web address, so it was not opened.",
-      );
-
-    environment.out(`Signing in to ${apiUrl}\n`);
-    environment.out(`  1. Go to   ${page}`);
-    environment.out(`  2. Type    ${request.userCode}\n`);
-    environment.out("Check the code on that page matches. Waiting for you to approve it (Ctrl-C to cancel)...");
-    // The address is printed above, so a browser that can't be opened is not the end of the login.
-    await environment.openBrowser(page).catch(() => undefined);
-
-    const login = await waitForApproval({
-      fetchImplementation: environment.fetchImplementation,
-      apiUrl,
-      request,
-      sleep: environment.sleep,
-      now: environment.now,
-    });
-    await environment.store.write(apiUrl, login);
-    // Remembered so `whoami` and `logout` know where to look. If it can't be written, nothing is lost but the convenience.
-    await environment.lastApiUrl.write(apiUrl).catch(() => undefined);
-    environment.out(`\nSigned in as ${login.email}. The login is kept in ${environment.store.description}.`);
+    await signIn(apiUrl, environment);
     return 0;
   } catch (error) {
     environment.error(`\n${error instanceof Error ? error.message : String(error)}`);
     return 1;
   }
+}
+
+/**
+ * Signs in to a CMS through the person's browser, as `ace-kit login` does, keeps the login, and returns it. Throws
+ * with something to tell the person if it can't be done.
+ */
+export async function signIn(apiUrl: string, environment: CliEnvironment): Promise<StoredLogin> {
+  const request = await startDeviceLogin({
+    fetchImplementation: environment.fetchImplementation,
+    apiUrl,
+    clientName: `ace-kit ${environment.version} on ${environment.hostname}`,
+  });
+  const page = webAddress(request.verificationUri);
+  if (!page)
+    throw new DeviceLoginError(
+      "unsupported",
+      "The CMS sent an approval address that isn't a web address, so it was not opened.",
+    );
+
+  environment.out(`Signing in to ${apiUrl}\n`);
+  environment.out(`  1. Go to   ${page}`);
+  environment.out(`  2. Type    ${request.userCode}\n`);
+  environment.out("Check the code on that page matches. Waiting for you to approve it (Ctrl-C to cancel)...");
+  // The address is printed above, so a browser that can't be opened is not the end of the login.
+  await environment.openBrowser(page).catch(() => undefined);
+
+  const login = await waitForApproval({
+    fetchImplementation: environment.fetchImplementation,
+    apiUrl,
+    request,
+    sleep: environment.sleep,
+    now: environment.now,
+  });
+  await environment.store.write(apiUrl, login);
+  // Remembered so `whoami` and `logout` know where to look. If it can't be written, nothing is lost but the convenience.
+  await environment.lastApiUrl.write(apiUrl).catch(() => undefined);
+  environment.out(`\nSigned in as ${login.email}. The login is kept in ${environment.store.description}.`);
+  return login;
 }
 
 export async function logoutCommand(commandArguments: string[], environment: CliEnvironment): Promise<number> {

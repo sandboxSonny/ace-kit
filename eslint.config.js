@@ -7,7 +7,7 @@ import globals from "globals";
 import typescriptEslint from "typescript-eslint";
 
 export default defineConfig(
-  { ignores: ["node_modules", "dist", "storybook-static", ".storybook/cache", "CHANGELOG.md"] },
+  { ignores: ["node_modules", "dist", "storybook-static", ".storybook/cache", "CHANGELOG.md", "templates"] },
 
   eslint.configs.recommended,
   ...typescriptEslint.configs.recommended,

@@ -52,13 +52,21 @@ for (const required of [
   "astro/AceSections.astro",
   "astro/AceRichText.astro",
   "astro/AcePreviewRefresh.astro",
+  "templates/astro/package.json",
+  "templates/astro/_gitignore",
+  "templates/astro.section-types.json",
+  "templates/astro/astro.config.mjs",
+  "templates/react-router/package.json",
+  "templates/react-router/_gitignore",
+  "templates/react-router/vite.config.ts",
 ]) {
   if (!packed.includes(required)) problems.push(`${required} is missing from the package`);
 }
 for (const file of packed) {
   if (/^(src|stories|scripts|\.storybook|\.changeset|\.github)\//.test(file))
     problems.push(`${file} should not be published`);
-  if (/\.(test|stories)\./.test(file)) problems.push(`${file} should not be published`);
+  if (!file.startsWith("templates/") && /\.(test|stories)\./.test(file))
+    problems.push(`${file} should not be published`);
 }
 
 const cli = readFileSync("dist/cli.js", "utf8");

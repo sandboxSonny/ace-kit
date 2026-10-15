@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { hostname } from "node:os";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { chooseLoginStore } from "../auth/choose-store";
 import { createLastApiUrl, defaultLastApiUrlFile } from "../auth/last-api-url";
@@ -27,6 +27,8 @@ export type CliEnvironment = {
   importModule: (path: string) => Promise<unknown>;
   /** Opens a web page in the person's browser, if it can. */
   openBrowser: (address: string) => Promise<void>;
+  /** The starter sites `create` copies (the templates folder next to the built tool). */
+  templatesDirectory: string;
   /** Where logins are kept between commands. */
   store: LoginStore;
   /** The API address last signed in to, used when no address is given. */
@@ -112,6 +114,7 @@ export async function createRealEnvironment(): Promise<CliEnvironment> {
     sleep: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
     now: Date.now,
     workingDirectory: process.cwd(),
+    templatesDirectory: fileURLToPath(new URL("../templates", import.meta.url)),
     importModule,
     openBrowser: (address) => openBrowser(platform, address),
     store: await chooseLoginStore({ platform, variables, run: runCommand }),

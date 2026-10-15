@@ -1,0 +1,1 @@
+/Users/sonny/Projects/cms-backend/example-astro-site/AGENTS.md

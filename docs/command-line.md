@@ -1,8 +1,9 @@
 # The command line
 
-`ace-kit` is also a command. It signs you in to CMS Ace from your terminal, and writes types for your content.
+`ace-kit` is also a command. It makes new sites, signs you in to CMS Ace from your terminal, and writes types for your content.
 
 ```sh
+npx @sandboxsonny/ace-kit create my-site --site my-site.com   # make a new site (see Making a site)
 npx ace-kit login      # sign in
 npx ace-kit whoami     # who am I signed in as?
 npx ace-kit logout     # sign out
@@ -11,6 +12,34 @@ npx ace-kit sync       # send your section types to the CMS (see Sections)
 ```
 
 Commands talk to the hosted CMS Ace unless told otherwise. Only for a CMS on your own machine, give `--api-url`, or set `ACE_API_URL` in the environment or a `.env` file in the folder you run it in. Failing both, a command uses the address you last signed in to (kept in a small file beside your logins), and failing that the hosted one, so `ace-kit login` and `ace-kit whoami` need no flags at all. Commands about a site (`sync`, `generate`) take `--site example.com`, or read `ACE_SITE_DOMAIN`.
+
+## Making a site
+
+```sh
+npx @sandboxsonny/ace-kit create my-site my-site.com
+```
+
+One command makes everything a new site needs:
+
+1. **Checks** the folder, the domain and the name, before anything is made.
+2. **Signs you in** if you aren't already (your browser opens; type the code from the terminal, as in [Signing in](#signing-in)).
+3. **Makes the site in CMS Ace** and gives it a starter: a `pages` content type, Home, About and Contact entries, a main menu and, for the Astro starter, the three example section types (hero, FAQ, gallery).
+4. **Copies a starter site** into `my-site/` with its name, domain and package name filled in.
+
+If a site with that domain already exists in CMS Ace, it is **left alone** (nothing is added to it, in case it has real content), a warning says so, and only the folder is made. If the CMS refuses to make the site (for instance, you have made as many as your account allows) nothing is made at all.
+
+Your account must be a **partner or super admin** (only they can make sites). The login `create` uses can set up the site it just made, for an hour, and no other site: it can't write content anywhere else.
+
+| Option                            | Meaning                                                                                |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| `<domain>` (or `--site <domain>`) | The domain the site has in CMS Ace. Required.                                          |
+| `--framework astro\|react-router` | `astro` (the default) or `react-router`. The React Router starter has no sections yet. |
+| `--name <name>`                   | The name shown to visitors. Default: made from the folder, so `my-site` is "My Site".  |
+| `--api-url <address>`             | Only for a CMS on your own machine (or set `ACE_API_URL`).                             |
+
+Against a CMS on your own machine (`--api-url` or `ACE_API_URL` set to `http://localhost:8080`), it also writes a `.env` in the new folder with `ACE_API_URL` and `ACE_PREVIEW_ADMIN_ORIGIN=http://localhost:5173`, and sets the site's Preview address to the local dev server (`http://localhost:4321`, or 4322 for React Router), so the site and live preview work with no more setup. Against the hosted CMS Ace none of that is needed.
+
+The folder must not exist yet (or must be empty). The starter is a small server-rendered site with a header, footer, rich text, live preview and Prettier, ESLint, tests and a CI workflow. When it finishes: `cd my-site`, `npm install`, `npm run dev`.
 
 ## Signing in
 

@@ -29,6 +29,7 @@
   "files": [
     "dist",
     "astro",
+    "templates",
     "docs",
     "CHANGELOG.md",
     "LICENSE"
@@ -87,8 +88,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run check:package",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run check:package && npm run check:templates",
     "check:package": "node scripts/check-package.mjs",
+    "check:templates": "node scripts/sync-templates.mjs --check",
+    "sync:templates": "node scripts/sync-templates.mjs",
     "pack:local": "npm run build && npm pack",
     "storybook": "storybook dev -p 6006",
     "build:storybook": "storybook build",

@@ -1,0 +1,58 @@
+---
+import AceImage from "@sandboxsonny/ace-kit/astro/AceImage.astro";
+import AceLink from "@sandboxsonny/ace-kit/astro/AceLink.astro";
+
+import type { SectionOf } from "@sandboxsonny/ace-kit";
+import type hero from "./Hero.schema";
+
+type Props = {
+  section: SectionOf<typeof hero>;
+};
+
+const { section } = Astro.props;
+const { heading, subheading, picture, button } = section.values;
+---
+
+<section class="hero section--surface" data-section={section.type}>
+  <div class="container hero__inner">
+    <div class="hero__text">
+      <h2>{heading}</h2>
+      {subheading && <p class="hero__subheading">{subheading}</p>}
+      {button && <AceLink link={button} class="button" />}
+    </div>
+    {picture && (
+      <div class="hero__picture">
+        <AceImage image={picture} sizes="(min-width: 64rem) 32rem, 100vw" lazy={false} />
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: 3rem;
+  }
+  .hero__inner {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (min-width: 48rem) {
+    .hero__inner:has(.hero__picture) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 2.25rem;
+    line-height: 1.15;
+  }
+  .hero__subheading {
+    margin: 0 0 1.5rem;
+    color: var(--colour-muted);
+    font-size: 1.15rem;
+  }
+  .hero__picture :global(img) {
+    border-radius: 0.5rem;
+  }
+</style>
