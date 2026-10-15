@@ -55,6 +55,7 @@ for (const required of [
   "templates/astro/package.json",
   "templates/astro/_gitignore",
   "templates/astro.section-types.json",
+  "templates/react-router.section-types.json",
   "templates/astro/astro.config.mjs",
   "templates/react-router/package.json",
   "templates/react-router/_gitignore",

@@ -134,7 +134,7 @@ describe("ace-kit sync", () => {
     const created = await setup({});
     expect(await runCli(["sync"], created.environment)).toBe(0);
     expect(created.requests).toEqual([]);
-    expect(created.output.join("\n")).toContain("No *.schema.ts files found in src, so nothing was synced");
+    expect(created.output.join("\n")).toContain("No *.schema.ts files found in src or app, so nothing was synced");
   });
 
   it("says to sign in, and sends nothing, when there is no login", async () => {

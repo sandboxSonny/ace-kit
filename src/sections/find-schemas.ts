@@ -16,12 +16,15 @@ const skippedFolders = new Set([
   "coverage",
 ]);
 
+/** Where a site keeps its code unless told otherwise: Astro and most sites use `src`, React Router uses `app`. */
+export const defaultSchemaFolders = ["src", "app"] as const;
+
 /**
- * Finds the schema files under a folder of the site (its `src` by default), in a steady order. A folder that isn't
- * there has none.
+ * Finds the schema files under a folder of the site, in a steady order. A folder that isn't there has none. With no
+ * folder given, both `src` and `app` are looked in, so a site finds its sections wherever its framework keeps code.
  */
-export async function findSchemaFiles(root: string, folder = "src"): Promise<string[]> {
-  const start = join(root, folder);
+export async function findSchemaFiles(root: string, folder?: string): Promise<string[]> {
+  const folders = folder === undefined ? defaultSchemaFolders : [folder];
   const found: string[] = [];
 
   async function walk(directory: string): Promise<void> {
@@ -41,7 +44,7 @@ export async function findSchemaFiles(root: string, folder = "src"): Promise<str
     }
   }
 
-  await walk(start);
+  for (const name of folders) await walk(join(root, name));
   // Compared plainly, not by locale, so the order is the same on every machine.
   return found.sort((first, second) => {
     const [firstName, secondName] = [relative(root, first), relative(root, second)];

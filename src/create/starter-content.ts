@@ -6,8 +6,8 @@ const richText = (text: string) => ({
   content: text.split("\n\n").map((paragraph) => ({ type: "paragraph", content: [{ type: "text", text: paragraph }] })),
 });
 
-/** Which sections a starter site can draw: the Astro starter has components for them, the React Router one doesn't yet. */
-export const frameworksWithSections: readonly Framework[] = ["astro"];
+/** Which starters draw sections (they all have components for the hero, FAQ and gallery). */
+export const frameworksWithSections: readonly Framework[] = ["astro", "react-router"];
 
 /** The fields of the `pages` content type the starter's pages read. `sections` is left out for a starter without them. */
 export function pageFields(framework: Framework) {

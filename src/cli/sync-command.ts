@@ -15,7 +15,7 @@ export const syncUsage = `ace-kit sync: send the section types your code defines
 Usage:
   ace-kit sync [--site <domain>] [--api-url <address>] [--dir <folder>]
 
-It finds every *.schema.ts file in the folder (src by default), checks them, and makes the CMS's section types for your
+It finds every *.schema.ts file in the folder (src and app by default), checks them, and makes the CMS's section types for your
 site match. The dev server does this for you whenever a schema file is saved; run it yourself for a one-off sync, or on a
 build server (with ACE_TOKEN set).
 
@@ -26,7 +26,7 @@ Options:
   --site      The domain your site has in the CMS, e.g. example.com (default: ACE_SITE_DOMAIN, else localhost).
               (--domain means the same.)
   --api-url   Where the CMS Ace API lives (default: ACE_API_URL, else the hosted CMS Ace). Only for a CMS on your own machine.
-  --dir       The folder to look in (default: src).
+  --dir       The folder to look in (default: src and app).
   --help      Show this message.
 `;
 
@@ -83,12 +83,12 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
     return 0;
   }
 
-  const files = await findSchemaFiles(environment.workingDirectory, values.dir ?? "src");
+  const files = await findSchemaFiles(environment.workingDirectory, values.dir);
   if (files.length === 0) {
     // A site that doesn't use sections is not told about them every time its dev server starts.
     if (!automatic) {
       environment.out(
-        `No *.schema.ts files found in ${values.dir ?? "src"}, so nothing was synced (syncing none would retire every section).`,
+        `No *.schema.ts files found in ${values.dir ?? "src or app"}, so nothing was synced (syncing none would retire every section).`,
       );
     }
     return 0;
