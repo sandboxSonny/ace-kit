@@ -1,5 +1,12 @@
 # @sandboxsonny/ace-kit
 
+## 0.7.0
+
+### Minor Changes
+
+- 909b1a1: Add `ace-kit doctor`: checks Node, that Ace Kit is installed, the CMS and site the settings point at, the login, the Pages content and the section types, and says what to do about each problem.
+- 584dcb1: The React Router starter made by `ace-kit create` now has the hero, FAQ and gallery sections, like the Astro one, and its published date and button. `ace-kit sync`, `ace-kit doctor` and the dev server look for `*.schema.ts` files in `app/` as well as `src/`. The docs now say a React Router site needs an `index` route as well as the `*` route, because `*` doesn't match `/`.
+
 ## 0.6.0
 
 ### Minor Changes
