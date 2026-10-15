@@ -58,7 +58,7 @@ const about = await getEntry("pages", "about");
 | [API reference](docs/api-reference.md)     | Every export                                 |
 | [Releasing](docs/releasing.md)             | Versions, the changelog and publishing       |
 
-The same pages, with live examples of the React components, are in Storybook: `npm run storybook`.
+The same pages, with live examples of the React components, are in Storybook: **https://sandboxsonny.github.io/ace-kit/** (or `npm run storybook` to run it yourself).
 
 ## Status
 
