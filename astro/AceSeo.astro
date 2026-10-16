@@ -7,10 +7,15 @@ import { getSite } from "../dist/astro.js";
 
 type Props = AceSeoOptions;
 
-// With no picture of its own, a page shows the social image chosen in the site's settings. The tags are never worth
-// failing the page for, so a CMS that can't be reached just means no picture.
-const site = Astro.props.image === undefined ? await getSite().catch(() => null) : null;
-const properties = seoProperties({ ...Astro.props, image: Astro.props.image ?? site?.social_image?.src });
+// With no picture or icon of its own, a page shows the ones chosen in the site's settings. The tags are never worth
+// failing the page for, so a CMS that can't be reached just means none.
+const needsSite = Astro.props.image === undefined || Astro.props.favicon === undefined;
+const site = needsSite ? await getSite().catch(() => null) : null;
+const properties = seoProperties({
+  ...Astro.props,
+  image: Astro.props.image ?? site?.social_image?.src,
+  favicon: Astro.props.favicon ?? site?.favicon ?? undefined,
+});
 ---
 
 <SEO {...properties} />

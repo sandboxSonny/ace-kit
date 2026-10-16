@@ -77,4 +77,13 @@ describe("seoProperties", () => {
     expect(seoProperties({ entry }).noindex).toBe(false);
     expect(seoProperties({ entry, noindex: true }).noindex).toBe(true);
   });
+
+  it("links the site's favicon, and only when there is one", () => {
+    const favicon = { icon: "https://cdn.test/48.png", apple_touch_icon: "https://cdn.test/180.png" };
+    expect(seoProperties({ title: "Site", favicon }).extend.link).toEqual([
+      { rel: "icon", href: "https://cdn.test/48.png", sizes: "48x48" },
+      { rel: "apple-touch-icon", href: "https://cdn.test/180.png" },
+    ]);
+    expect(seoProperties({ title: "Site" }).extend).not.toHaveProperty("link");
+  });
 });
