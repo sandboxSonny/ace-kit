@@ -212,3 +212,17 @@ describe("in the browser", () => {
     await expect(import("./server")).resolves.toHaveProperty("createPageLoader");
   });
 });
+
+describe("the sitemap and robots loaders", () => {
+  it("answer with the site's pages as XML and a robots.txt that names them", async () => {
+    const { createSitemapLoader, createRobotsLoader } = await server();
+    fetchSpy.mockResolvedValue(json([{ path: "/pages/about", updated_at: "2026-10-01T09:30:00Z" }]));
+    const sitemap = (await createSitemapLoader({ origin: "https://www.example.com" })({
+      request: new Request("http://site.test/sitemap.xml"),
+    })) as Response;
+    expect(asked()).toBe("/public/sitemap");
+    expect(await sitemap.text()).toContain("<loc>https://www.example.com/pages/about</loc>");
+    const robots = createRobotsLoader({ disallowAll: true })({ request: new Request("http://site.test/robots.txt") });
+    expect(await robots.text()).toBe("User-agent: *\nDisallow: /\n");
+  });
+});

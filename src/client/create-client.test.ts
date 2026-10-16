@@ -240,6 +240,17 @@ describe("getRedirect", () => {
   });
 });
 
+describe("getSitemap", () => {
+  it("asks for the site's pages, and treats none as an empty list", async () => {
+    const pages = [{ path: "/", updated_at: "2026-10-16T10:00:00Z" }];
+    const fetchSpy = vi.fn(async () => json(pages));
+    expect(await clientWith(fetchSpy as unknown as typeof fetch).getSitemap()).toEqual(pages);
+    expect((fetchSpy.mock.calls[0] as unknown[])[0]).toBe("https://api.example.com/public/sitemap");
+    const missing = vi.fn(async () => json({ error: "not found" }, 404));
+    expect(await clientWith(missing as unknown as typeof fetch).getSitemap()).toEqual([]);
+  });
+});
+
 describe("getSite", () => {
   it("asks for the site, with its social image", async () => {
     const site = { id: 1, name: "Acme", domain: "acme.test", handle: "acme", social_image: null, favicon: null };

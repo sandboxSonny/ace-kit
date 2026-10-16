@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { applyPage, getMenuLinks, getPage } from "./index";
+import { applyPage, getMenuLinks, getPage, getRobotsResponse, getSitemapResponse } from "./index";
 import integration from "./integration";
 import { onRequest } from "./middleware";
 
@@ -146,5 +146,20 @@ describe("the integration", () => {
     expect((await setUp()).middleware).toEqual([
       { entrypoint: "@sandboxsonny/ace-kit/astro/middleware", order: "pre" },
     ]);
+  });
+});
+
+describe("getSitemapResponse and getRobotsResponse", () => {
+  it("builds the sitemap from the CMS's pages, as the configured site", async () => {
+    fetchSpy.mockResolvedValue(json([{ path: "/pages/about", updated_at: "2026-10-01T09:30:00Z" }]));
+    const response = await getSitemapResponse({ url: new URL("http://site.test/sitemap.xml") });
+    expect(String(fetchSpy.mock.calls[0][0])).toContain("/public/sitemap");
+    expect(await response.text()).toContain("<loc>https://site.test/pages/about</loc>");
+  });
+
+  it("builds robots.txt without asking the CMS", async () => {
+    const response = getRobotsResponse({ url: new URL("http://localhost:4321/robots.txt") });
+    expect(await response.text()).toContain("Sitemap: http://localhost:4321/sitemap.xml");
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

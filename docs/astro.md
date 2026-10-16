@@ -48,6 +48,24 @@ if (page.kind === "redirect") return Astro.redirect(page.location, page.status);
 
 Addresses are `/{content type}/{entry}` as on Shopify, `/` is the `home` entry of `pages`, and `/pages/home` redirects to `/`. An address with no page is redirected too if the site's owners set up a redirect for it in the CMS (Redirects), so old addresses from a site you moved keep working. `page.kind` is `entry`, `redirect`, `not-found`, `unavailable` or `preview-expired`. `AceNotice` draws a heading and a message for the last three; draw your own if you prefer.
 
+## Sitemap and robots.txt
+
+Search engines find a site's pages through `/sitemap.xml` and are pointed at it by `/robots.txt`. Both are one small file each; the sitemap lists the live pages from the CMS (only the content types that have "Entries have their own pages" ticked), with when each last changed.
+
+```ts
+// src/pages/sitemap.xml.ts
+import { getSitemapResponse } from "@sandboxsonny/ace-kit/astro";
+export const GET = ({ url }) => getSitemapResponse({ url });
+```
+
+```ts
+// src/pages/robots.txt.ts
+import { getRobotsResponse } from "@sandboxsonny/ace-kit/astro";
+export const GET = ({ url }) => getRobotsResponse({ url });
+```
+
+Addresses in the sitemap use `https` unless the site is on `localhost`; pass `{ origin: "https://www.example.com" }` to either to choose. `getRobotsResponse({ url }, { disallowAll: true })` asks crawlers to stay away, for a site that isn't live yet. Delete any `robots.txt` in `public/`, which would take its place.
+
 ## Reading content
 
 Anywhere in a page or component:

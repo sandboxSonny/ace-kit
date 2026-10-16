@@ -4,6 +4,7 @@ import type { AceContentTypeHandle, AceEntry, AceValuesOf } from "../types/entri
 import type { AceMenu } from "../types/menus";
 import type { AceRedirect } from "../types/redirects";
 import type { AceSite } from "../types/site";
+import type { AceSitemapEntry } from "../types/sitemap";
 import { AcePreviewExpiredError, AceUnavailableError } from "./errors";
 
 const requestTimeoutMilliseconds = 5000;
@@ -126,6 +127,11 @@ export function createAceClient({
           /^https?:\/\/[^\s]+$/i.test(redirect.to)) &&
         (redirect.status === 301 || redirect.status === 302);
       return goesSomewhereSafe ? redirect : null;
+    },
+
+    /** The site's live pages for its sitemap, by path. Pages of content types that have no pages of their own are left out. */
+    async getSitemap(): Promise<AceSitemapEntry[]> {
+      return (await get<AceSitemapEntry[]>("/public/sitemap")) ?? [];
     },
 
     /** The site itself: its name, and the social image its owners chose (null if none). */

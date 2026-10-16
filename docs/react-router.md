@@ -102,6 +102,22 @@ From `@sandboxsonny/ace-kit/react-router` (these are safe in the browser):
 - **AceImage** is an `<img>` with `src`, `srcset`, `sizes`, size and alt text. Set `sizes` to how wide it is shown, and `lazy={false}` for the image at the top of the page.
 - **AceNotice** is the heading and message for a page that isn't an entry. Give it a `className`.
 
+## Sitemap and robots.txt
+
+Search engines find a site's pages through `/sitemap.xml` and are pointed at it by `/robots.txt`. Add two routes before the catch-all in `app/routes.ts`: `route("sitemap.xml", "routes/sitemap.tsx")` and `route("robots.txt", "routes/robots.tsx")`, whose files are one line each:
+
+```ts
+// app/routes/sitemap.tsx
+export { sitemapLoader as loader } from "@sandboxsonny/ace-kit/react-router/server";
+```
+
+```ts
+// app/routes/robots.tsx
+export { robotsLoader as loader } from "@sandboxsonny/ace-kit/react-router/server";
+```
+
+The sitemap lists the live pages from the CMS (only the content types that have "Entries have their own pages" ticked), with when each last changed. Addresses use `https` unless the site is on `localhost`. For another address, or to keep crawlers away from a site that isn't live yet, use `createSitemapLoader({ origin })` and `createRobotsLoader({ origin, disallowAll })`.
+
 ## Reading content in your own loaders
 
 From `@sandboxsonny/ace-kit/react-router/server`, with no client to create:
