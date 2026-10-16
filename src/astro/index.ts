@@ -5,6 +5,8 @@ import { ACE_API_URL, ACE_SITE_DOMAIN } from "astro:env/server";
 import { createAceClient } from "../client/create-client";
 import { loadMenuLinks } from "../helpers/menus";
 import { loadPage } from "../helpers/page";
+import { robotsResponse, sitemapResponse } from "../helpers/sitemap";
+import type { RobotsOptions } from "../helpers/sitemap";
 import type { AceNavigationLink } from "../types/menus";
 import type { AcePage } from "../types/page";
 
@@ -63,3 +65,27 @@ export async function getPage<Values = Record<string, unknown>>(astro: {
   applyPage(astro.response, page);
   return page;
 }
+
+/**
+ * The response for `/sitemap.xml`: the site's live pages (of the content types that have pages), with when each last
+ * changed. Make `src/pages/sitemap.xml.ts` with
+ *
+ *     import { getSitemapResponse } from "@sandboxsonny/ace-kit/astro";
+ *     export const GET = ({ url }) => getSitemapResponse({ url });
+ *
+ * The addresses use https unless the site is on localhost; pass `{ origin: "https://example.com" }` to choose.
+ */
+export const getSitemapResponse = (astro: { url: URL }, options: { origin?: string } = {}) =>
+  sitemapResponse(ace, astro.url, options);
+
+/**
+ * The response for `/robots.txt`, which lets crawlers in and points them at the sitemap. Make `src/pages/robots.txt.ts`
+ * with
+ *
+ *     import { getRobotsResponse } from "@sandboxsonny/ace-kit/astro";
+ *     export const GET = ({ url }) => getRobotsResponse({ url });
+ *
+ * Pass `{ disallowAll: true }` for a site that isn't live yet.
+ */
+export const getRobotsResponse = (astro: { url: URL }, options: RobotsOptions = {}) =>
+  robotsResponse(astro.url, options);

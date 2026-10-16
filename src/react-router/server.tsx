@@ -11,6 +11,8 @@ import type { AceClient } from "../client/create-client";
 import { addFramingPolicy, previewTokenFrom } from "../helpers/preview";
 import { loadMenuLinks } from "../helpers/menus";
 import { loadPage } from "../helpers/page";
+import { robotsResponse, sitemapResponse } from "../helpers/sitemap";
+import type { RobotsOptions } from "../helpers/sitemap";
 import type { AceNavigationLink } from "../types/menus";
 import type { AcePage } from "../types/page";
 import type { AceRootData } from "../types/react-router";
@@ -80,6 +82,31 @@ export function createPageLoader<Values = Record<string, unknown>>() {
     return data(page as Exclude<AcePage<Values>, { kind: "redirect" }>, { status: page.status, headers: page.headers });
   };
 }
+
+/**
+ * The loader for `/sitemap.xml`: the site's live pages (of the content types that have pages), with when each last
+ * changed. Add a route `route("sitemap.xml", "routes/sitemap.tsx")` (before the catch-all) whose file is
+ *
+ *     export { sitemapLoader as loader } from "@sandboxsonny/ace-kit/react-router/server";
+ *
+ * It uses https unless the site is on localhost; for another address use `createSitemapLoader({ origin })`.
+ */
+export const createSitemapLoader = (options: { origin?: string } = {}) =>
+  function loader({ request }: { request: Request }) {
+    return sitemapResponse(getAceClient(), new URL(request.url), options);
+  };
+
+/** `createSitemapLoader()` with the defaults. */
+export const sitemapLoader = createSitemapLoader();
+
+/** The loader for `/robots.txt`, which lets crawlers in and points them at the sitemap. See `createSitemapLoader`. */
+export const createRobotsLoader = (options: RobotsOptions = {}) =>
+  function loader({ request }: { request: Request }) {
+    return robotsResponse(new URL(request.url), options);
+  };
+
+/** `createRobotsLoader()` with the defaults. */
+export const robotsLoader = createRobotsLoader();
 
 /** `createPageLoader()` for a site that has not generated types for its content. */
 export const loader = createPageLoader();

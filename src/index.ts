@@ -40,6 +40,8 @@ export {
 export { listenForPreviewRefresh, refreshPageContent } from "./helpers/preview-listener";
 export { seoDescriptionHandle, seoProperties, seoTitleHandle } from "./helpers/seo";
 export type { AceSeoOptions, AceSeoProperties } from "./helpers/seo";
+export { publicOrigin, robotsResponse, robotsTxt, sitemapResponse, sitemapXml } from "./helpers/sitemap";
+export type { RobotsOptions } from "./helpers/sitemap";
 export { renderTextArea } from "./helpers/text-area";
 export { headingLevel, listStart, renderRichText, richTextImageSizes } from "./helpers/rich-text";
 
@@ -52,6 +54,7 @@ export type { AceLinkData } from "./types/links";
 export type { AceMenu, AceMenuItem, AceNavigationLink } from "./types/menus";
 export type { AceRedirect } from "./types/redirects";
 export type { AceSection, AceSectionBlock } from "./types/sections";
+export type { AceSitemapEntry } from "./types/sitemap";
 export type { AceFavicon, AceSite } from "./types/site";
 export type { AcePage } from "./types/page";
 export type { AceRichTextDocument, AceRichTextMark, AceRichTextNode } from "./types/rich-text";

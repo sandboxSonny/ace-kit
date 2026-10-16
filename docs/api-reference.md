@@ -86,13 +86,14 @@ Types: `AceSection`, `AceSectionBlock`, `SectionDefinition`, `SectionFieldDefini
 
 `@sandboxsonny/ace-kit/astro` (uses the integration's settings, so there is no client to create):
 
-|                                                                                           |                                                                                                                                                           |
-| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getPage(Astro)`                                                                          | What to show for the page being requested; also sets the response's status and headers. A `redirect` is returned for you to act on with `Astro.redirect`. |
-| `getEntry(contentType, handle)`, `getEntries(contentType, { limit? })`, `getMenu(handle)` | As on the client.                                                                                                                                         |
-| `getMenuLinks(handle, { fallback? })`                                                     | A menu's links, or the fallback if the menu is missing or the CMS is down.                                                                                |
-| `applyPage(response, page)`                                                               | Puts a page's status and headers on a response.                                                                                                           |
-| `ace`                                                                                     | The client these use.                                                                                                                                     |
+|                                                                                                     |                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getPage(Astro)`                                                                                    | What to show for the page being requested; also sets the response's status and headers. A `redirect` is returned for you to act on with `Astro.redirect`. |
+| `getEntry(contentType, handle)`, `getEntries(contentType, { limit? })`, `getMenu(handle)`           | As on the client.                                                                                                                                         |
+| `getSitemapResponse({ url }, { origin? })`, `getRobotsResponse({ url }, { origin?, disallowAll? })` | The responses for `/sitemap.xml` and `/robots.txt` (see [Astro](./astro.md)).                                                                             |
+| `getMenuLinks(handle, { fallback? })`                                                               | A menu's links, or the fallback if the menu is missing or the CMS is down.                                                                                |
+| `applyPage(response, page)`                                                                         | Puts a page's status and headers on a response.                                                                                                           |
+| `ace`                                                                                               | The client these use.                                                                                                                                     |
 
 Components, by file: `AceImage.astro`, `AceLink.astro`, `AceSections.astro`, `AceRichText.astro`, `AceTextArea.astro`, `AceMenu.astro`, `AceNotice.astro`, `AcePreviewRefresh.astro`.
 
@@ -110,13 +111,14 @@ Components, by file: `AceImage.astro`, `AceLink.astro`, `AceSections.astro`, `Ac
 
 `@sandboxsonny/ace-kit/react-router/server` (server only):
 
-|                                                                     |                                                                  |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `createPageLoader<Values>()`, `loader`                              | The loader for the catch-all route that draws every page.        |
-| `headers`                                                           | The route's `headers` export.                                    |
-| `createRootLoader({ menu, fallback? })`                             | The root loader: the menu's links and whether this is a preview. |
-| `handleRequest`, `streamTimeout`                                    | The server entry.                                                |
-| `getEntry`, `getEntries`, `getMenu`, `getMenuLinks`, `getAceClient` | Read content from your own loaders.                              |
+|                                                                                                |                                                                                           |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `createPageLoader<Values>()`, `loader`                                                         | The loader for the catch-all route that draws every page.                                 |
+| `headers`                                                                                      | The route's `headers` export.                                                             |
+| `createRootLoader({ menu, fallback? })`                                                        | The root loader: the menu's links and whether this is a preview.                          |
+| `handleRequest`, `streamTimeout`                                                               | The server entry.                                                                         |
+| `sitemapLoader`, `robotsLoader`, `createSitemapLoader(options)`, `createRobotsLoader(options)` | The loaders for `/sitemap.xml` and `/robots.txt` (see [React Router](./react-router.md)). |
+| `getEntry`, `getEntries`, `getMenu`, `getMenuLinks`, `getAceClient`                            | Read content from your own loaders.                                                       |
 
 ## React (`@sandboxsonny/ace-kit/react`)
 
