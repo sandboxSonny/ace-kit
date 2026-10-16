@@ -1,4 +1,5 @@
 import type { AceEntry } from "../types/entries";
+import type { AceFavicon } from "../types/site";
 
 /** The two values every entry has, whatever its content type: what a search engine shows for it. */
 export const seoTitleHandle = "seo-title";
@@ -20,11 +21,17 @@ export type AceSeoOptions = {
    * social image chosen in the site's settings in the CMS (if any).
    */
   image?: string;
+  /**
+   * The site's favicon. In the Astro `<AceSeo>`, leaving it out uses the favicon chosen in the site's settings in the
+   * CMS (if any); it then adds `<link rel="icon">` and `<link rel="apple-touch-icon">`.
+   */
+  favicon?: Pick<AceFavicon, "icon" | "apple_touch_icon">;
   /** Tells search engines to leave the page out, as for a draft shown in preview. */
   noindex?: boolean;
 };
 
 type Meta = { property?: string; name?: string; content: string };
+type Link = { rel: string; href: string; sizes?: string };
 
 /** What `astro-seo`'s `<SEO>` takes (only the parts used here). */
 export type AceSeoProperties = {
@@ -33,7 +40,7 @@ export type AceSeoProperties = {
   canonical?: string;
   noindex: boolean;
   twitter: { card: "summary" | "summary_large_image"; title?: string; description?: string; image?: string };
-  extend: { meta: Meta[] };
+  extend: { meta: Meta[]; link?: Link[] };
 };
 
 const textValue = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
@@ -71,6 +78,14 @@ export function seoProperties(options: AceSeoOptions): AceSeoProperties {
       ...(description && { description }),
       ...(options.image && { image: options.image }),
     },
-    extend: { meta },
+    extend: {
+      meta,
+      ...(options.favicon && {
+        link: [
+          { rel: "icon", href: options.favicon.icon, sizes: "48x48" },
+          { rel: "apple-touch-icon", href: options.favicon.apple_touch_icon },
+        ],
+      }),
+    },
   };
 }
