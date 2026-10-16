@@ -212,6 +212,34 @@ describe("previews", () => {
   });
 });
 
+describe("getRedirect", () => {
+  const redirect = { from: "/old", to: "/pages/new", status: 301 };
+  const ask = (answer: unknown, status = 200) => {
+    const fetchSpy = vi.fn(async () => json(answer, status));
+    return { fetchSpy, client: clientWith(fetchSpy as unknown as typeof fetch) };
+  };
+
+  it("asks for the address, query string and all", async () => {
+    const { fetchSpy, client } = ask(redirect);
+    expect(await client.getRedirect("/old?id=7&a=b")).toEqual(redirect);
+    expect((fetchSpy.mock.calls[0] as unknown[])[0]).toBe(
+      "https://api.example.com/public/redirects?from=%2Fold%3Fid%3D7%26a%3Db",
+    );
+  });
+
+  it("returns null when the site has no redirect for it", async () => {
+    expect(await ask({ error: "redirect not found" }, 404).client.getRedirect("/old")).toBeNull();
+  });
+
+  it("only follows a path on the site or a web address, whatever the CMS says", async () => {
+    for (const to of ["//evil.test", "javascript:alert(1)", "/a\\evil", "ftp://x.test", "https://", ""]) {
+      expect(await ask({ ...redirect, to }).client.getRedirect("/old"), to).toBeNull();
+    }
+    expect(await ask({ ...redirect, status: 307 }).client.getRedirect("/old")).toBeNull();
+    expect(await ask({ ...redirect, to: "https://shop.example.com/x" }).client.getRedirect("/old")).not.toBeNull();
+  });
+});
+
 describe("getSite", () => {
   it("asks for the site, with its social image", async () => {
     const site = { id: 1, name: "Acme", domain: "acme.test", handle: "acme", social_image: null, favicon: null };

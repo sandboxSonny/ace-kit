@@ -90,7 +90,15 @@ describe("createPageLoader", () => {
     expect(await load(loader, "/pages/nope")).toMatchObject({ status: 404, data: { kind: "not-found" } });
     fetchSpy.mockClear();
     expect((await load(loader, "/a/b/c")).status).toBe(404);
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(asked()).toBe("/public/redirects?from=%2Fa%2Fb%2Fc"); // it looked for a redirect, not for an entry
+  });
+
+  it("redirects an address that isn't a page when the site has a redirect for it", async () => {
+    const { loader } = await server();
+    fetchSpy.mockResolvedValue(json({ from: "/about-us", to: "/pages/about", status: 301 }));
+    const response = await load(loader, "/about-us");
+    expect([response.status, response.headers.get("Location")]).toEqual([301, "/pages/about"]);
+    expect(asked()).toBe("/public/redirects?from=%2Fabout-us");
   });
 
   it("redirects the home entry's own address to the root", async () => {
