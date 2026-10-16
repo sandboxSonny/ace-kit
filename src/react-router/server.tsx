@@ -89,7 +89,7 @@ export function createPageLoader<Values = Record<string, unknown>>() {
  *
  *     export { sitemapLoader as loader } from "@sandboxsonny/ace-kit/react-router/server";
  *
- * It uses https unless the site is on localhost; for another address use `createSitemapLoader({ origin })`.
+ * It uses the site's domain (`ACE_SITE_DOMAIN`) over https, or the address of the request for a site on localhost; for another address use `createSitemapLoader({ origin })`.
  */
 export const createSitemapLoader = (options: { origin?: string } = {}) =>
   function loader({ request }: { request: Request }) {
@@ -102,7 +102,7 @@ export const sitemapLoader = createSitemapLoader();
 /** The loader for `/robots.txt`, which lets crawlers in and points them at the sitemap. See `createSitemapLoader`. */
 export const createRobotsLoader = (options: RobotsOptions = {}) =>
   function loader({ request }: { request: Request }) {
-    return robotsResponse(new URL(request.url), options);
+    return robotsResponse(new URL(request.url), options, getAceClient().siteDomain);
   };
 
 /** `createRobotsLoader()` with the defaults. */

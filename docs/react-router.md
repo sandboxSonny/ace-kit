@@ -116,7 +116,7 @@ export { sitemapLoader as loader } from "@sandboxsonny/ace-kit/react-router/serv
 export { robotsLoader as loader } from "@sandboxsonny/ace-kit/react-router/server";
 ```
 
-The sitemap lists the live pages from the CMS (only the content types that have "Entries have their own pages" ticked), with when each last changed. Addresses use `https` unless the site is on `localhost`. For another address, or to keep crawlers away from a site that isn't live yet, use `createSitemapLoader({ origin })` and `createRobotsLoader({ origin, disallowAll })`.
+The sitemap lists the live pages from the CMS (only the content types that have "Entries have their own pages" ticked), with when each last changed. Addresses are your site's domain (`ACE_SITE_DOMAIN`) over `https`, or the address of the request when the site is on `localhost`. For another address, or to keep crawlers away from a site that isn't live yet, use `createSitemapLoader({ origin })` and `createRobotsLoader({ origin, disallowAll })`.
 
 ## Reading content in your own loaders
 

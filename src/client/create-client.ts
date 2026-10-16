@@ -78,6 +78,9 @@ export function createAceClient({
   }
 
   return {
+    /** The domain of the site this client reads, as the CMS knows it. */
+    siteDomain,
+
     /**
      * One live entry of a content type, by its handle; null if the site has no such entry. With a preview token the
      * entry the token was made for comes back with its draft applied (never cached); a token that has run out throws
