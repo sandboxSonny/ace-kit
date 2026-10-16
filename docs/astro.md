@@ -64,7 +64,7 @@ import { getRobotsResponse } from "@sandboxsonny/ace-kit/astro";
 export const GET = ({ url }) => getRobotsResponse({ url });
 ```
 
-Addresses in the sitemap use `https` unless the site is on `localhost`; pass `{ origin: "https://www.example.com" }` to either to choose. `getRobotsResponse({ url }, { disallowAll: true })` asks crawlers to stay away, for a site that isn't live yet. Delete any `robots.txt` in `public/`, which would take its place.
+Addresses in the sitemap are your site's domain (`ACE_SITE_DOMAIN`) over `https`, or the address of the request when the site is on `localhost`; pass `{ origin: "https://www.example.com" }` to either to choose. `getRobotsResponse({ url }, { disallowAll: true })` asks crawlers to stay away, for a site that isn't live yet. Delete any `robots.txt` in `public/`, which would take its place.
 
 ## Reading content
 

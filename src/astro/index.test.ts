@@ -154,7 +154,22 @@ describe("getSitemapResponse and getRobotsResponse", () => {
     fetchSpy.mockResolvedValue(json([{ path: "/pages/about", updated_at: "2026-10-01T09:30:00Z" }]));
     const response = await getSitemapResponse({ url: new URL("http://site.test/sitemap.xml") });
     expect(String(fetchSpy.mock.calls[0][0])).toContain("/public/sitemap");
-    expect(await response.text()).toContain("<loc>https://site.test/pages/about</loc>");
+    // The site's domain here has no public address (.test), so the request's own address is used.
+    expect(await response.text()).toContain("<loc>http://site.test/pages/about</loc>");
+  });
+
+  it("names the address it is told to, which a proxied server needs to be right", async () => {
+    fetchSpy.mockResolvedValue(json([{ path: "/pages/about", updated_at: "2026-10-01T09:30:00Z" }]));
+    const response = await getSitemapResponse(
+      { url: new URL("http://localhost:8080/sitemap.xml") },
+      { origin: "https://www.example.com" },
+    );
+    expect(await response.text()).toContain("<loc>https://www.example.com/pages/about</loc>");
+    const robots = getRobotsResponse(
+      { url: new URL("http://localhost:8080/robots.txt") },
+      { origin: "https://www.example.com" },
+    );
+    expect(await robots.text()).toContain("Sitemap: https://www.example.com/sitemap.xml");
   });
 
   it("builds robots.txt without asking the CMS", async () => {

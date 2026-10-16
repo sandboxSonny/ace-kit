@@ -73,7 +73,7 @@ export async function getPage<Values = Record<string, unknown>>(astro: {
  *     import { getSitemapResponse } from "@sandboxsonny/ace-kit/astro";
  *     export const GET = ({ url }) => getSitemapResponse({ url });
  *
- * The addresses use https unless the site is on localhost; pass `{ origin: "https://example.com" }` to choose.
+ * The addresses are the site's domain (`ACE_SITE_DOMAIN`) over https, or the address of the request for a site on localhost; pass `{ origin: "https://example.com" }` to choose.
  */
 export const getSitemapResponse = (astro: { url: URL }, options: { origin?: string } = {}) =>
   sitemapResponse(ace, astro.url, options);
@@ -88,4 +88,4 @@ export const getSitemapResponse = (astro: { url: URL }, options: { origin?: stri
  * Pass `{ disallowAll: true }` for a site that isn't live yet.
  */
 export const getRobotsResponse = (astro: { url: URL }, options: RobotsOptions = {}) =>
-  robotsResponse(astro.url, options);
+  robotsResponse(astro.url, options, ace.siteDomain);

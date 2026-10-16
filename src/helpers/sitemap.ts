@@ -10,14 +10,19 @@ const escapeXml = (text: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 
+const isLocalHost = (host: string) =>
+  host === "localhost" || /\.(localhost|test|local)$/.test(host) || /^[\d.]+$|:/.test(host);
+
 /**
- * The address a visitor reached the site at, for the full addresses in a sitemap. A site on a real domain is served
- * over https, but behind a proxy the server often sees plain http, so anything that isn't `localhost` or an IP address
- * is given https. Pass `origin` to the response helpers to choose it yourself.
+ * The address the site's pages are at, for the full addresses in a sitemap. It is the site's domain in the CMS
+ * (`ACE_SITE_DOMAIN`) over https, because behind a proxy the server only sees its own internal address
+ * (`localhost:8080` on Railway), so the request can't say. For a site on `localhost` (or a `.test` domain), which
+ * has no public address, it is the address the request came to. Pass `origin` to the response helpers to choose it.
  */
-export function publicOrigin(url: URL): string {
-  const local = url.hostname === "localhost" || url.hostname.endsWith(".localhost") || /^[\d.]+$|:/.test(url.hostname);
-  return local ? url.origin : `https://${url.host}`;
+export function publicOrigin(url: URL, siteDomain?: string): string {
+  const domain = siteDomain?.trim().toLowerCase();
+  if (domain && !isLocalHost(domain)) return `https://${domain}`;
+  return isLocalHost(url.hostname) ? url.origin : `https://${url.host}`;
 }
 
 /** The sitemap file for a site: one `<url>` per page, with when it last changed. `origin` is e.g. `https://example.com`. */
@@ -58,7 +63,7 @@ export async function sitemapResponse(
 ): Promise<Response> {
   try {
     const entries = await client.getSitemap();
-    return new Response(sitemapXml(entries, options.origin ?? publicOrigin(url)), {
+    return new Response(sitemapXml(entries, options.origin ?? publicOrigin(url, client.siteDomain)), {
       headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=300" },
     });
   } catch (error) {
@@ -72,8 +77,11 @@ export async function sitemapResponse(
 }
 
 /** The response for `/robots.txt`. */
-export function robotsResponse(url: URL, options: RobotsOptions = {}): Response {
-  return new Response(robotsTxt({ origin: options.origin ?? publicOrigin(url), disallowAll: options.disallowAll }), {
-    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
-  });
+export function robotsResponse(url: URL, options: RobotsOptions = {}, siteDomain?: string): Response {
+  return new Response(
+    robotsTxt({ origin: options.origin ?? publicOrigin(url, siteDomain), disallowAll: options.disallowAll }),
+    {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
+    },
+  );
 }
