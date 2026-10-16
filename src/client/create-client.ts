@@ -2,6 +2,7 @@ import type { AceClientOptions } from "../types/client";
 import type { AceContentTypeSchema } from "../types/content-types";
 import type { AceContentTypeHandle, AceEntry, AceValuesOf } from "../types/entries";
 import type { AceMenu } from "../types/menus";
+import type { AceSite } from "../types/site";
 import { AcePreviewExpiredError, AceUnavailableError } from "./errors";
 
 const requestTimeoutMilliseconds = 5000;
@@ -108,6 +109,11 @@ export function createAceClient({
     /** One of the site's navigation menus by its handle, with every link worked out; null if the site has none. */
     getMenu(handle: string): Promise<AceMenu | null> {
       return get<AceMenu>(`/public/menus/${encodeURIComponent(handle)}`);
+    },
+
+    /** The site itself: its name, and the social image its owners chose (null if none). */
+    getSite(): Promise<AceSite | null> {
+      return get<AceSite>("/public/site");
     },
 
     /** What the site's content types and fields are, which is what type generation reads. */

@@ -20,6 +20,9 @@ export const getEntries = ace.getEntries;
 /** A navigation menu with every link worked out, or `null`. */
 export const getMenu = ace.getMenu;
 
+/** The site: its name and the social image its owners chose (`social_image`, or `null`). */
+export const getSite = ace.getSite;
+
 /**
  * A menu's links, ready to draw: `[{ label, to, children? }]`. If the site has no such menu, or the CMS can't be
  * reached, you get `fallback` instead, so a missing menu never takes a page down.
