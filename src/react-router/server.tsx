@@ -51,6 +51,9 @@ export const getEntries = ((...parameters: Parameters<AceClient["getEntries"]>) 
 /** A navigation menu with every link worked out, or `null`. */
 export const getMenu = (handle: string) => getAceClient().getMenu(handle);
 
+/** The site: its name and the social image its owners chose (`social_image`, or `null`). */
+export const getSite = () => getAceClient().getSite();
+
 /**
  * A menu's links, ready to draw. If the site has no such menu, or the CMS can't be reached, you get `fallback`
  * instead, so a missing menu never takes a page down.

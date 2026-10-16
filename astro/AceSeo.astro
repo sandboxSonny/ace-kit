@@ -3,10 +3,14 @@ import { SEO } from "astro-seo";
 
 import { seoProperties } from "../dist/index.js";
 import type { AceSeoOptions } from "../dist/index.js";
+import { getSite } from "../dist/astro.js";
 
 type Props = AceSeoOptions;
 
-const properties = seoProperties(Astro.props);
+// With no picture of its own, a page shows the social image chosen in the site's settings. The tags are never worth
+// failing the page for, so a CMS that can't be reached just means no picture.
+const site = Astro.props.image === undefined ? await getSite().catch(() => null) : null;
+const properties = seoProperties({ ...Astro.props, image: Astro.props.image ?? site?.social_image?.src });
 ---
 
 <SEO {...properties} />

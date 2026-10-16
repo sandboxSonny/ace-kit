@@ -51,5 +51,6 @@ export type { AceImageData } from "./types/images";
 export type { AceLinkData } from "./types/links";
 export type { AceMenu, AceMenuItem, AceNavigationLink } from "./types/menus";
 export type { AceSection, AceSectionBlock } from "./types/sections";
+export type { AceSite } from "./types/site";
 export type { AcePage } from "./types/page";
 export type { AceRichTextDocument, AceRichTextMark, AceRichTextNode } from "./types/rich-text";

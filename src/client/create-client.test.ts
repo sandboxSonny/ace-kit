@@ -212,6 +212,15 @@ describe("previews", () => {
   });
 });
 
+describe("getSite", () => {
+  it("asks for the site, with its social image", async () => {
+    const site = { id: 1, name: "Acme", domain: "acme.test", handle: "acme", social_image: null };
+    const fetchSpy = vi.fn(async () => json(site));
+    expect(await clientWith(fetchSpy as unknown as typeof fetch).getSite()).toEqual(site);
+    expect((fetchSpy.mock.calls[0] as unknown[])[0]).toBe("https://api.example.com/public/site");
+  });
+});
+
 describe("getMenu", () => {
   it("asks for the menu by its handle", async () => {
     const menu = { name: "Main menu", handle: "main-menu", items: [] };

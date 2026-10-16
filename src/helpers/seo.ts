@@ -15,7 +15,10 @@ export type AceSeoOptions = {
   siteName?: string;
   /** The page's address, if it isn't the one requested. Left out, the requested address is used. */
   canonical?: string;
-  /** A picture to show when the page is shared: a full web address. */
+  /**
+   * A picture to show when the page is shared: a full web address. In the Astro `<AceSeo>`, leaving it out uses the
+   * social image chosen in the site's settings in the CMS (if any).
+   */
   image?: string;
   /** Tells search engines to leave the page out, as for a draft shown in preview. */
   noindex?: boolean;
