@@ -7,9 +7,10 @@ import type { AceClient } from "../client/create-client";
 const entry = { id: 1, content_type_handle: "pages", handle: "about", title: "About", values: {} };
 const url = (path: string) => new URL(`http://site.test${path}`);
 
-function clientReturning(result: () => Promise<unknown>) {
+function clientReturning(result: () => Promise<unknown>, redirect: () => Promise<unknown> = async () => null) {
   const getEntry = vi.fn(result);
-  return { client: { getEntry } as unknown as AceClient, getEntry };
+  const getRedirect = vi.fn(redirect);
+  return { client: { getEntry, getRedirect } as unknown as AceClient, getEntry, getRedirect };
 }
 
 describe("loadPage", () => {
@@ -80,5 +81,73 @@ describe("loadPage", () => {
     const broken = clientReturning(async () => Promise.reject(new TypeError("a bug")));
     await expect(loadPage(broken.client, { slug: "pages/about", url: url("/pages/about") })).rejects.toThrow("a bug");
     quiet.mockRestore();
+  });
+
+  describe("redirects", () => {
+    const moved = { from: "/about-us", to: "/pages/about", status: 301 };
+
+    it("redirects an address that isn't a page when the site has a redirect for it", async () => {
+      const { client, getEntry, getRedirect } = clientReturning(
+        async () => entry,
+        async () => moved,
+      );
+      const page = await loadPage(client, { slug: "about-us", url: url("/about-us?utm_source=mail") });
+      expect(page).toEqual({ kind: "redirect", status: 301, location: "/pages/about", headers: {} });
+      expect(getRedirect).toHaveBeenCalledWith("/about-us?utm_source=mail");
+      expect(getEntry).not.toHaveBeenCalled();
+    });
+
+    it("keeps a temporary redirect temporary and can go to another site", async () => {
+      const { client } = clientReturning(
+        async () => null,
+        async () => ({ ...moved, to: "https://shop.example.com/", status: 302 }),
+      );
+      expect(await loadPage(client, { slug: "pages/gone", url: url("/pages/gone") })).toMatchObject({
+        kind: "redirect",
+        status: 302,
+        location: "https://shop.example.com/",
+      });
+    });
+
+    it("looks for a redirect only once it knows there is no entry", async () => {
+      const { client, getRedirect } = clientReturning(
+        async () => entry,
+        async () => moved,
+      );
+      expect((await loadPage(client, { slug: "pages/about", url: url("/pages/about") })).kind).toBe("entry");
+      expect(getRedirect).not.toHaveBeenCalled();
+    });
+
+    it("is not found when there is no redirect either", async () => {
+      const { client, getRedirect } = clientReturning(async () => null);
+      expect(await loadPage(client, { slug: "pages/nope", url: url("/pages/nope?a=1") })).toMatchObject({
+        kind: "not-found",
+        status: 404,
+      });
+      expect(getRedirect).toHaveBeenCalledWith("/pages/nope?a=1");
+    });
+
+    it("never redirects a page shown in the CMS's preview frame", async () => {
+      const { client, getRedirect } = clientReturning(
+        async () => null,
+        async () => moved,
+      );
+      const page = await loadPage(client, { slug: "pages/nope", url: url("/pages/nope?cms_preview=tok") });
+      expect(page).toMatchObject({ kind: "not-found" });
+      expect(getRedirect).not.toHaveBeenCalled();
+    });
+
+    it("says when the CMS can't be asked about a redirect", async () => {
+      const quiet = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const { client } = clientReturning(
+        async () => null,
+        async () => Promise.reject(new AceUnavailableError("Could not reach the CMS.")),
+      );
+      expect(await loadPage(client, { slug: "old", url: url("/old") })).toMatchObject({
+        kind: "unavailable",
+        status: 503,
+      });
+      quiet.mockRestore();
+    });
   });
 });

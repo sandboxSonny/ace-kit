@@ -50,6 +50,7 @@ export type { AceContentTypeHandle, AceContentTypes, AceEntry, AceValuesOf } fro
 export type { AceImageData } from "./types/images";
 export type { AceLinkData } from "./types/links";
 export type { AceMenu, AceMenuItem, AceNavigationLink } from "./types/menus";
+export type { AceRedirect } from "./types/redirects";
 export type { AceSection, AceSectionBlock } from "./types/sections";
 export type { AceFavicon, AceSite } from "./types/site";
 export type { AcePage } from "./types/page";

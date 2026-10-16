@@ -2,6 +2,7 @@ import type { AceClientOptions } from "../types/client";
 import type { AceContentTypeSchema } from "../types/content-types";
 import type { AceContentTypeHandle, AceEntry, AceValuesOf } from "../types/entries";
 import type { AceMenu } from "../types/menus";
+import type { AceRedirect } from "../types/redirects";
 import type { AceSite } from "../types/site";
 import { AcePreviewExpiredError, AceUnavailableError } from "./errors";
 
@@ -109,6 +110,22 @@ export function createAceClient({
     /** One of the site's navigation menus by its handle, with every link worked out; null if the site has none. */
     getMenu(handle: string): Promise<AceMenu | null> {
       return get<AceMenu>(`/public/menus/${encodeURIComponent(handle)}`);
+    },
+
+    /**
+     * Where an address the site has no page for should redirect to, if the site's owners set that up; null if not.
+     * `address` is the path with its query string, e.g. "/old-page?id=7".
+     */
+    async getRedirect(address: string): Promise<AceRedirect | null> {
+      const redirect = await get<AceRedirect>(`/public/redirects?from=${encodeURIComponent(address)}`);
+      // Only ever send a visitor to a path on the site or a web address, whatever the CMS says.
+      const goesSomewhereSafe =
+        redirect !== null &&
+        typeof redirect.to === "string" &&
+        ((redirect.to.startsWith("/") && !redirect.to.startsWith("//") && !redirect.to.includes("\\")) ||
+          /^https?:\/\/[^\s]+$/i.test(redirect.to)) &&
+        (redirect.status === 301 || redirect.status === 302);
+      return goesSomewhereSafe ? redirect : null;
     },
 
     /** The site itself: its name, and the social image its owners chose (null if none). */

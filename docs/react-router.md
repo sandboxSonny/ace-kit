@@ -69,7 +69,7 @@ export default function Page({ loaderData: page }: Route.ComponentProps) {
 }
 ```
 
-The loader reads the address (`/{content type}/{entry}`, and `/` is the `home` entry of `pages`), loads the entry and answers with the right status and headers: a missing page is a real 404, an unreachable CMS a 503, an expired preview a 403, `/pages/home` redirects to `/`, and a preview is never cached or indexed. `page.kind` is `entry`, `not-found`, `unavailable` or `preview-expired`. `createMeta` titles the page from the entry (followed by the site's name), adds its description, and asks search engines to ignore a preview. With [typed content](./typed-content.md), `createPageLoader<PageValues>()` gives `page.entry.values` its real shape.
+The loader reads the address (`/{content type}/{entry}`, and `/` is the `home` entry of `pages`), loads the entry and answers with the right status and headers: a missing page is a real 404, an unreachable CMS a 503, an expired preview a 403, `/pages/home` redirects to `/`, an address with no page follows the redirect the site's owners set up in the CMS (if any), and a preview is never cached or indexed. `page.kind` is `entry`, `not-found`, `unavailable` or `preview-expired`. `createMeta` titles the page from the entry (followed by the site's name), adds its description, and asks search engines to ignore a preview. With [typed content](./typed-content.md), `createPageLoader<PageValues>()` gives `page.entry.values` its real shape.
 
 **4. The root route** loads the header menu and keeps previews fresh:
 

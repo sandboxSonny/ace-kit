@@ -46,7 +46,7 @@ if (page.kind === "redirect") return Astro.redirect(page.location, page.status);
 {page.kind === "entry" ? <h1>{page.entry.title}</h1> : <AceNotice page={page} />}
 ```
 
-Addresses are `/{content type}/{entry}` as on Shopify, `/` is the `home` entry of `pages`, and `/pages/home` redirects to `/`. `page.kind` is `entry`, `redirect`, `not-found`, `unavailable` or `preview-expired`. `AceNotice` draws a heading and a message for the last three; draw your own if you prefer.
+Addresses are `/{content type}/{entry}` as on Shopify, `/` is the `home` entry of `pages`, and `/pages/home` redirects to `/`. An address with no page is redirected too if the site's owners set up a redirect for it in the CMS (Redirects), so old addresses from a site you moved keep working. `page.kind` is `entry`, `redirect`, `not-found`, `unavailable` or `preview-expired`. `AceNotice` draws a heading and a message for the last three; draw your own if you prefer.
 
 ## Reading content
 
