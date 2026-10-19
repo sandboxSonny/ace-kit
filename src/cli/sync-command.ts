@@ -1,7 +1,10 @@
 import { parseArgs } from "node:util";
 
 import { resolveLogin } from "../auth/resolve-login";
-import { findSchemaFiles } from "../sections/find-schemas";
+import { findFormFiles, findSchemaFiles } from "../sections/find-schemas";
+import { loadForms } from "../forms/load-forms";
+import { formsPayload } from "../forms/payload";
+import { syncForms } from "../forms/sync";
 import { loadSchemas } from "../sections/load-schemas";
 import { sectionTypesPayload } from "../sections/payload";
 import { syncSectionTypes } from "../sections/sync";
@@ -10,17 +13,18 @@ import { cmsName, isLocalApiUrl, loginCommandFor } from "./api-url";
 import type { CliEnvironment } from "./environment";
 import { normaliseApiUrl } from "../auth/login-store";
 
-export const syncUsage = `ace-kit sync: send the section types your code defines to CMS Ace.
+export const syncUsage = `ace-kit sync: send the section types and forms your code defines to CMS Ace.
 
 Usage:
   ace-kit sync [--site <domain>] [--dir <folder>]
 
-It finds every *.schema.ts file in the folder (src and app by default), checks them, and makes the CMS's section types for your
-site match. The dev server does this for you whenever a schema file is saved; run it yourself for a one-off sync, or on a
-build server (with ACE_TOKEN set).
+It finds every *.schema.ts file (section types) and every *.form.ts file (forms) in the folder (src and app by default),
+checks them, and makes the CMS's section types and forms for your site match. The dev server does this for you whenever
+one of those files is saved; run it yourself for a one-off sync, or on a build server (with ACE_TOKEN set).
 
 Nothing is deleted: a section type, block or field you take out of your code is kept in the CMS, hidden, so the content
-written in it survives. If any schema file can't be loaded, nothing is synced.
+written in it survives; a form you take out stops taking messages but keeps the ones it has. If any file can't be
+loaded, nothing is synced.
 
 Options:
   --site      The domain your site has in the CMS, e.g. example.com (or set ACE_SITE_DOMAIN).
@@ -83,11 +87,12 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
   }
 
   const files = await findSchemaFiles(environment.workingDirectory, values.dir);
-  if (files.length === 0) {
-    // A site that doesn't use sections is not told about them every time its dev server starts.
+  const formFiles = await findFormFiles(environment.workingDirectory, values.dir);
+  if (files.length === 0 && formFiles.length === 0) {
+    // A site that doesn't use sections or forms is not told about them every time its dev server starts.
     if (!automatic) {
       environment.out(
-        `No *.schema.ts files found in ${values.dir ?? "src or app"}, so nothing was synced (syncing none would retire every section).`,
+        `No *.schema.ts or *.form.ts files found in ${values.dir ?? "src or app"}, so nothing was synced (syncing none would retire every section and form).`,
       );
     }
     return 0;
@@ -100,36 +105,80 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
     now: environment.now,
   });
   if (!login) {
-    environment.out(`Section sync is waiting for you to sign in. Run: ${loginCommandFor(apiUrl)}`);
+    environment.out(`Sync is waiting for you to sign in. Run: ${loginCommandFor(apiUrl)}`);
     return automatic ? 0 : 1;
   }
 
   const loaded = await loadSchemas(files, environment.workingDirectory, environment.importModule);
-  if (loaded.problems.length > 0) {
-    for (const problem of loaded.problems) environment.error(problem);
-    environment.error("Nothing was synced, because syncing only some of your sections would retire the rest.");
+  const loadedForms = await loadForms(formFiles, environment.workingDirectory, environment.importModule);
+  const problems = [...loaded.problems, ...loadedForms.problems];
+  if (problems.length > 0) {
+    for (const problem of problems) environment.error(problem);
+    environment.error(
+      "Nothing was synced, because syncing only some of your sections and forms would retire the rest.",
+    );
     return 1;
   }
 
-  const outcome = await syncSectionTypes({
-    apiUrl,
-    siteDomain,
-    token: login.token,
-    payload: sectionTypesPayload(loaded.definitions.map((entry) => entry.definition)),
-    fetchImplementation: environment.fetchImplementation,
-  });
+  const where = `${apiUrl === hostedApiUrl ? "" : ` (${apiUrl})`}`;
+  let exitCode = 0;
 
-  switch (outcome.kind) {
-    case "synced": {
+  if (files.length > 0) {
+    const outcome = await syncSectionTypes({
+      apiUrl,
+      siteDomain,
+      token: login.token,
+      payload: sectionTypesPayload(loaded.definitions.map((entry) => entry.definition)),
+      fetchImplementation: environment.fetchImplementation,
+    });
+    if (outcome.kind === "synced") {
       const defined = outcome.sections.filter((section) => !section.retired).map((section) => section.handle);
       const retired = outcome.sections.filter((section) => section.retired).map((section) => section.handle);
       environment.out(
-        `Synced ${defined.length} section type${defined.length === 1 ? "" : "s"} (${defined.join(", ")}) to ${outcome.site.domain}${apiUrl === hostedApiUrl ? "" : ` (${apiUrl})`}.` +
+        `Synced ${defined.length} section type${defined.length === 1 ? "" : "s"} (${defined.join(", ")}) to ${outcome.site.domain}${where}.` +
           (retired.length > 0 ? ` No longer in your code, kept but hidden: ${retired.join(", ")}.` : ""),
       );
       for (const warning of outcome.warnings) environment.error(`Warning: ${warning}`);
-      return 0;
+    } else {
+      exitCode = reportFailure(outcome, apiUrl, automatic, environment);
     }
+  }
+
+  if (formFiles.length > 0 && exitCode === 0) {
+    const outcome = await syncForms({
+      apiUrl,
+      siteDomain,
+      token: login.token,
+      payload: formsPayload(loadedForms.definitions.map((entry) => entry.definition)),
+      fetchImplementation: environment.fetchImplementation,
+    });
+    if (outcome.kind === "synced") {
+      const defined = outcome.forms.filter((form) => !form.retired).map((form) => form.handle);
+      const retired = outcome.forms.filter((form) => form.retired).map((form) => form.handle);
+      environment.out(
+        `Synced ${defined.length} form${defined.length === 1 ? "" : "s"} (${defined.join(", ")}) to ${outcome.site.domain}${where}.` +
+          (retired.length > 0 ? ` No longer in your code, no longer taking messages: ${retired.join(", ")}.` : ""),
+      );
+    } else {
+      exitCode = reportFailure(outcome, apiUrl, automatic, environment);
+    }
+  }
+  return exitCode;
+}
+
+/** Says why a sync did not happen, and what the command should exit with. */
+function reportFailure(
+  outcome:
+    | { kind: "login-ended" }
+    | { kind: "site-not-found"; domain: string; available: string[] }
+    | { kind: "forbidden"; message: string }
+    | { kind: "rejected"; message: string }
+    | { kind: "unreachable" },
+  apiUrl: string,
+  automatic: boolean,
+  environment: CliEnvironment,
+): number {
+  switch (outcome.kind) {
     case "login-ended":
       environment.out(`Your login has ended. Run: ${loginCommandFor(apiUrl)}`);
       return automatic ? 0 : 1;

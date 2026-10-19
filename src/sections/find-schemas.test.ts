@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { findSchemaFiles, schemaFilePattern } from "./find-schemas";
+import { findFormFiles, findSchemaFiles, formFilePattern, schemaFilePattern } from "./find-schemas";
 
 let root: string;
 beforeEach(async () => {
@@ -80,5 +80,24 @@ describe("schemaFilePattern", () => {
       expect(schemaFilePattern.test(name), name).toBe(true);
     for (const name of ["faq.ts", "faq.schema", "schema.ts", "faq.schema.json", "faq.schemas.ts"])
       expect(schemaFilePattern.test(name), name).toBe(false);
+  });
+});
+
+describe("findFormFiles", () => {
+  it("finds form files, and not schema files, in src and app", async () => {
+    await touch("src", "contact.form.ts");
+    await touch("app", "forms", "quote.form.mjs");
+    await touch("src", "Hero.schema.ts");
+    await touch("src", "contact.form.d.ts");
+    await touch("src", "form.ts");
+    expect(names(await findFormFiles(root))).toEqual(["app/forms/quote.form.mjs", "src/contact.form.ts"]);
+    expect(names(await findSchemaFiles(root))).toEqual(["src/Hero.schema.ts"]);
+  });
+
+  it("matches the file names a person would write", () => {
+    expect(formFilePattern.test("contact.form.ts")).toBe(true);
+    expect(formFilePattern.test("contact.form.js")).toBe(true);
+    expect(formFilePattern.test("contact.forms.ts")).toBe(false);
+    expect(schemaFilePattern.test("contact.form.ts")).toBe(false);
   });
 });

@@ -4,6 +4,7 @@ import { ACE_API_URL, ACE_SITE_DOMAIN } from "astro:env/server";
 
 import { createAceClient } from "../client/create-client";
 import { loadMenuLinks } from "../helpers/menus";
+import { formSubmissionResponse } from "../helpers/form-submission";
 import { loadPage } from "../helpers/page";
 import { robotsResponse, sitemapResponse } from "../helpers/sitemap";
 import type { RobotsOptions } from "../helpers/sitemap";
@@ -21,6 +22,22 @@ export const getEntries = ace.getEntries;
 
 /** A navigation menu with every link worked out, or `null`. */
 export const getMenu = ace.getMenu;
+
+/** A form of the site (its fields, the thank-you message and the Turnstile site key, if on), or `null`. */
+export const getForm = ace.getForm;
+
+/**
+ * Handles a visitor sending one of the site's forms: the CMS stores the message and emails the owners, and the answer
+ * is JSON (`{ message }`, or `{ error }` with a status). Make an endpoint such as `src/pages/api/contact.ts`
+ *
+ *     import { getFormSubmitResponse } from "@sandboxsonny/ace-kit/astro";
+ *     export const prerender = false;
+ *     export const POST = ({ request }) => getFormSubmitResponse({ request }, "contact");
+ *
+ * and have the form post to it as JSON or as a normal form post.
+ */
+export const getFormSubmitResponse = (astro: { request: Request }, handle: string) =>
+  formSubmissionResponse(ace, astro.request, handle);
 
 /** The site: its name and the social image its owners chose (`social_image`, or `null`). */
 export const getSite = ace.getSite;

@@ -1,0 +1,20 @@
+---
+import { getForm } from "../dist/astro.js";
+
+type Props = {
+  /** The handle of the form this widget protects, as in its `*.form.ts` file. */
+  form: string;
+};
+
+// The CMS says whether the site's owners turned Turnstile on for their forms (they enter the keys in the CMS's site
+// settings). When they haven't, or the CMS can't be reached, nothing is drawn and the form works without it.
+const settings = await getForm(Astro.props.form).catch(() => null);
+const siteKey = settings?.turnstile_site_key ?? "";
+---
+
+{siteKey ? (
+  <>
+    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+    <div class="cf-turnstile" data-sitekey={siteKey} />
+  </>
+) : null}

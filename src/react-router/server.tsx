@@ -8,6 +8,7 @@ import type { AppLoadContext, EntryContext } from "react-router";
 
 import { createAceClient } from "../client/create-client";
 import type { AceClient } from "../client/create-client";
+import { formSubmissionResponse } from "../helpers/form-submission";
 import { addFramingPolicy, previewTokenFrom } from "../helpers/preview";
 import { loadMenuLinks } from "../helpers/menus";
 import { loadPage } from "../helpers/page";
@@ -94,6 +95,19 @@ export function createPageLoader<Values = Record<string, unknown>>() {
 export const createSitemapLoader = (options: { origin?: string } = {}) =>
   function loader({ request }: { request: Request }) {
     return sitemapResponse(getAceClient(), new URL(request.url), options);
+  };
+
+/**
+ * The action for a form's endpoint: the CMS stores the message and emails the owners, and the answer is JSON
+ * (`{ message }`, or `{ error }` with a status). Add a route `route("api/contact", "routes/contact.tsx")` whose file is
+ *
+ *     export const action = createFormAction("contact");
+ *
+ * (import it from "@sandboxsonny/ace-kit/react-router/server") and have the form post to it as JSON or as a normal post.
+ */
+export const createFormAction = (handle: string) =>
+  function action({ request }: { request: Request }) {
+    return formSubmissionResponse(getAceClient(), request, handle);
   };
 
 /** `createSitemapLoader()` with the defaults. */

@@ -4,6 +4,9 @@ import { join, relative } from "node:path";
 /** Files that describe a section: Faq.schema.ts, hero.schema.js and so on. */
 export const schemaFilePattern = /\.schema\.(?:ts|mts|js|mjs)$/;
 
+/** Files that describe a form: contact.form.ts, quote.form.js and so on. */
+export const formFilePattern = /\.form\.(?:ts|mts|js|mjs)$/;
+
 /** Folders that never hold a site's own schema files. */
 const skippedFolders = new Set([
   "node_modules",
@@ -23,7 +26,14 @@ export const defaultSchemaFolders = ["src", "app"] as const;
  * Finds the schema files under a folder of the site, in a steady order. A folder that isn't there has none. With no
  * folder given, both `src` and `app` are looked in, so a site finds its sections wherever its framework keeps code.
  */
-export async function findSchemaFiles(root: string, folder?: string): Promise<string[]> {
+export const findSchemaFiles = (root: string, folder?: string): Promise<string[]> =>
+  findFiles(root, schemaFilePattern, folder);
+
+/** Finds the files that define the site's forms (`*.form.ts`), the same way. */
+export const findFormFiles = (root: string, folder?: string): Promise<string[]> =>
+  findFiles(root, formFilePattern, folder);
+
+async function findFiles(root: string, pattern: RegExp, folder?: string): Promise<string[]> {
   const folders = folder === undefined ? defaultSchemaFolders : [folder];
   const found: string[] = [];
 
@@ -38,7 +48,7 @@ export async function findSchemaFiles(root: string, folder?: string): Promise<st
       const path = join(directory, entry.name);
       if (entry.isDirectory()) {
         if (!skippedFolders.has(entry.name)) await walk(path);
-      } else if (entry.isFile() && schemaFilePattern.test(entry.name) && !entry.name.endsWith(".d.ts")) {
+      } else if (entry.isFile() && pattern.test(entry.name) && !entry.name.endsWith(".d.ts")) {
         found.push(path);
       }
     }

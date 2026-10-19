@@ -38,12 +38,15 @@ Everything below is exported from `@sandboxsonny/ace-kit` unless a path is given
 
 ## Sections
 
-|                                                     |                                                                                                                             |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `defineSection({ handle, name, fields?, blocks? })` | Describes a kind of section in a `*.schema.ts` file (see [Sections](./sections.md)). Returns it unchanged, for `SectionOf`. |
-| `SectionOf<typeof schema>`                          | The type of a section of that kind, as a website gets it: use it for the props of the component that draws it.              |
-| `checkSectionDefinition(definition, where?)`        | What is wrong with a definition, as a list of messages (empty if fine).                                                     |
-| `sectionTypesPayload(definitions)`                  | The body `PUT /sites/{id}/section-types` takes.                                                                             |
+|                                                                                               |                                                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `defineForm({ handle, name, fields })`                                                        | Describes a form in a `*.form.ts` file (see [Forms](./forms.md)). Returns it unchanged.                                                                                              |
+| `formSubmissionResponse(client, request, handle)`                                             | Handles a visitor sending a form: passes it to the CMS and answers with JSON. `getFormSubmitResponse` (Astro) and `createFormAction` (React Router) are this with the site's client. |
+| `client.getForm(handle)`, `client.submitForm(handle, { values, honeypot?, turnstileToken? })` | A form's fields, thank-you and Turnstile key; and sending one (`{ ok, message }` or `{ ok: false, status, error }`).                                                                 |
+| `defineSection({ handle, name, fields?, blocks? })`                                           | Describes a kind of section in a `*.schema.ts` file (see [Sections](./sections.md)). Returns it unchanged, for `SectionOf`.                                                          |
+| `SectionOf<typeof schema>`                                                                    | The type of a section of that kind, as a website gets it: use it for the props of the component that draws it.                                                                       |
+| `checkSectionDefinition(definition, where?)`                                                  | What is wrong with a definition, as a list of messages (empty if fine).                                                                                                              |
+| `sectionTypesPayload(definitions)`                                                            | The body `PUT /sites/{id}/section-types` takes.                                                                                                                                      |
 
 Types: `AceSection`, `AceSectionBlock`, `SectionDefinition`, `SectionFieldDefinition`, `SectionFieldType`, `BlockDefinition`, `ValuesOfFields`. Components: `AceSections.astro`, and `AceSections` from `/react` and `/react-router`.
 

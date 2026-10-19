@@ -94,6 +94,30 @@ describe("syncing section types while the dev server runs", () => {
     }
   });
 
+  it("syncs at start for a site that has only form files", async () => {
+    await mkdir(join(root, "src"), { recursive: true });
+    await writeFile(join(root, "src", "contact.form.ts"), "");
+    const { server, httpServer } = fakeServer();
+    const runSync = vi.fn(async () => ok("done"));
+    startSectionSync(server, { runSync, debounceMilliseconds: 10 });
+    httpServer.emit("listening");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(runSync).toHaveBeenCalledTimes(1);
+  });
+
+  it("syncs when a form file changes, and not for its type declaration", async () => {
+    vi.useFakeTimers();
+    const { server, watcher } = fakeServer();
+    const runSync = vi.fn(async () => ok("done"));
+    startSectionSync(server, { runSync, debounceMilliseconds: 100 });
+    watcher.emit("change", "/site/src/forms/quote.form.d.ts");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(runSync).not.toHaveBeenCalled();
+    watcher.emit("change", "/site/src/forms/quote.form.ts");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(runSync).toHaveBeenCalledTimes(1);
+  });
+
   it("makes a burst of saves one sync", async () => {
     vi.useFakeTimers();
     const { server, watcher } = fakeServer();

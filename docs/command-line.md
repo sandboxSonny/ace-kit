@@ -9,7 +9,7 @@ npx ace-kit whoami     # who am I signed in as?
 npx ace-kit logout     # sign out
 npx ace-kit doctor     # check this site is set up properly (see Checking a site)
 npx ace-kit generate   # write TypeScript types (see Typed content)
-npx ace-kit sync       # send your section types to the CMS (see Sections)
+npx ace-kit sync       # send your section types and forms to the CMS (see Sections and Forms)
 ```
 
 Commands connect to CMS Ace for you, so `ace-kit login` and `ace-kit whoami` need no flags at all. Commands about a site (`sync`, `generate`, `doctor`) take `--site example.com`, or read `ACE_SITE_DOMAIN`.
