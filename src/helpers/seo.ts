@@ -4,6 +4,9 @@ import type { AceFavicon } from "../types/site";
 /** The two values every entry has, whatever its content type: what a search engine shows for it. */
 export const seoTitleHandle = "seo-title";
 export const seoDescriptionHandle = "seo-description";
+/** Two optional checkboxes on every entry: ask search engines to leave the page out, and not to follow its links. */
+export const seoNoindexHandle = "seo-noindex";
+export const seoNofollowHandle = "seo-nofollow";
 
 export type AceSeoOptions = {
   /** The entry the page shows. Its SEO title and description are used, falling back to its title and description. */
@@ -26,8 +29,13 @@ export type AceSeoOptions = {
    * CMS (if any); it then adds `<link rel="icon">` and `<link rel="apple-touch-icon">`.
    */
   favicon?: Pick<AceFavicon, "icon" | "apple_touch_icon">;
-  /** Tells search engines to leave the page out, as for a draft shown in preview. */
+  /**
+   * Tells search engines to leave the page out, as for a draft shown in preview. The entry's own "noindex" checkbox
+   * does the same, so this only ever adds to it.
+   */
   noindex?: boolean;
+  /** Tells search engines not to follow the page's links. The entry's own "nofollow" checkbox does the same. */
+  nofollow?: boolean;
 };
 
 type Meta = { property?: string; name?: string; content: string };
@@ -39,20 +47,35 @@ export type AceSeoProperties = {
   description?: string;
   canonical?: string;
   noindex: boolean;
+  nofollow: boolean;
   twitter: { card: "summary" | "summary_large_image"; title?: string; description?: string; image?: string };
   extend: { meta: Meta[]; link?: Link[] };
 };
 
 const textValue = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
 
+/** What an entry's "noindex" and "nofollow" checkboxes say (unticked, or never saved, is false). */
+export function robotsFlags(entry: { values?: Record<string, unknown> } | undefined): {
+  noindex: boolean;
+  nofollow: boolean;
+} {
+  return { noindex: entry?.values?.[seoNoindexHandle] === true, nofollow: entry?.values?.[seoNofollowHandle] === true };
+}
+
+/** The `robots` directives for a page ("noindex, nofollow"), or "" when search engines may do both. */
+export function robotsDirectives({ noindex, nofollow }: { noindex: boolean; nofollow: boolean }): string {
+  return [noindex && "noindex", nofollow && "nofollow"].filter(Boolean).join(", ");
+}
+
 /**
- * Works out what a page's search and sharing tags say. An entry's SEO title and description win; if the editor left
+ * Works out what a page's search and sharing tags say. An entry's SEO title and description win, and its "noindex" and "nofollow" checkboxes turn on the robots tags; if the editor left
  * them out (an entry saved before they were required, say) its own title and description are used, then the
  * options'. The site's name ends the `<title>` (not the sharing titles), unless the title already is the name.
  * Open Graph is written as plain meta tags, so a page with no picture needs no placeholder.
  */
 export function seoProperties(options: AceSeoOptions): AceSeoProperties {
   const { entry } = options;
+  const flags = robotsFlags(entry);
   const title = textValue(entry?.values?.[seoTitleHandle]) || textValue(entry?.title) || textValue(options.title);
   const description =
     textValue(entry?.values?.[seoDescriptionHandle]) || textValue(entry?.description) || textValue(options.description);
@@ -71,7 +94,8 @@ export function seoProperties(options: AceSeoOptions): AceSeoProperties {
     ...(pageTitle && { title: pageTitle }),
     ...(description && { description }),
     ...(options.canonical && { canonical: options.canonical }),
-    noindex: options.noindex === true,
+    noindex: options.noindex === true || flags.noindex,
+    nofollow: options.nofollow === true || flags.nofollow,
     twitter: {
       card: options.image ? "summary_large_image" : "summary",
       ...(title && { title }),

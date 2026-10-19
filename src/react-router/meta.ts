@@ -1,10 +1,12 @@
+import { robotsDirectives, robotsFlags } from "../helpers/seo";
 import type { AcePage } from "../types/page";
 
 type MetaDescriptor = { title: string } | { name: string; content: string };
 
 /**
  * The route's `meta`: the entry's title (followed by the site's name, if you give one), its description, and
- * `noindex` for a preview so search engines ignore it.
+ * `noindex` for a preview so search engines ignore it, and the robots directives the entry's "noindex" and
+ * "nofollow" checkboxes ask for.
  *
  *     export const meta = createMeta({ siteName: "Example Site" });
  */
@@ -20,7 +22,9 @@ export function createMeta({ siteName }: { siteName?: string } = {}) {
     } else if (siteName) {
       descriptors.push({ title: siteName });
     }
-    if (page.headers["Cache-Control"]) descriptors.push({ name: "robots", content: "noindex" });
+    const flags = page.kind === "entry" ? robotsFlags(page.entry) : { noindex: false, nofollow: false };
+    const directives = robotsDirectives({ ...flags, noindex: flags.noindex || Boolean(page.headers["Cache-Control"]) });
+    if (directives) descriptors.push({ name: "robots", content: directives });
     return descriptors;
   };
 }

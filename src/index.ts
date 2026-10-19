@@ -38,7 +38,15 @@ export {
   swapPageContent,
 } from "./helpers/preview";
 export { listenForPreviewRefresh, refreshPageContent } from "./helpers/preview-listener";
-export { seoDescriptionHandle, seoProperties, seoTitleHandle } from "./helpers/seo";
+export {
+  robotsDirectives,
+  robotsFlags,
+  seoDescriptionHandle,
+  seoNofollowHandle,
+  seoNoindexHandle,
+  seoProperties,
+  seoTitleHandle,
+} from "./helpers/seo";
 export type { AceSeoOptions, AceSeoProperties } from "./helpers/seo";
 export { publicOrigin, robotsResponse, robotsTxt, sitemapResponse, sitemapXml } from "./helpers/sitemap";
 export type { RobotsOptions } from "./helpers/sitemap";

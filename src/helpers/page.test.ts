@@ -21,6 +21,21 @@ describe("loadPage", () => {
     expect(getEntry).toHaveBeenCalledWith("pages", "about", { previewToken: null });
   });
 
+  it("sends X-Robots-Tag for an entry marked noindex or nofollow, and nothing otherwise", async () => {
+    const flagged = (values: Record<string, unknown>) => clientReturning(async () => ({ ...entry, values })).client;
+    const load = (client: AceClient, path = "/pages/about") =>
+      loadPage(client, { slug: path.slice(1).split("?")[0], url: url(path) });
+    expect((await load(flagged({ "seo-noindex": true }))).headers).toEqual({ "X-Robots-Tag": "noindex" });
+    expect((await load(flagged({ "seo-nofollow": true }))).headers).toEqual({ "X-Robots-Tag": "nofollow" });
+    expect((await load(flagged({ "seo-noindex": true, "seo-nofollow": true }))).headers).toEqual({
+      "X-Robots-Tag": "noindex, nofollow",
+    });
+    expect((await load(flagged({ "seo-noindex": false }))).headers).toEqual({});
+    // A preview is already noindex; it gains nofollow.
+    const preview = await load(flagged({ "seo-nofollow": true }), "/pages/about?cms_preview=abc");
+    expect(preview.headers).toEqual({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" });
+  });
+
   it("shows the home entry at the root", async () => {
     const { client, getEntry } = clientReturning(async () => ({ ...entry, handle: "home" }));
     const page = await loadPage(client, { slug: undefined, url: url("/") });

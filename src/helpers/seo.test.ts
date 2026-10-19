@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { seoProperties } from "./seo";
+import { robotsDirectives, robotsFlags, seoProperties } from "./seo";
 
 const entry = {
   title: "About",
@@ -76,6 +76,28 @@ describe("seoProperties", () => {
   it("marks a page noindex only when told to", () => {
     expect(seoProperties({ entry }).noindex).toBe(false);
     expect(seoProperties({ entry, noindex: true }).noindex).toBe(true);
+    expect(seoProperties({ entry }).nofollow).toBe(false);
+    expect(seoProperties({ entry, nofollow: true }).nofollow).toBe(true);
+  });
+
+  it("follows the entry's noindex and nofollow checkboxes", () => {
+    const withValues = (values: Record<string, unknown>) => ({ entry: { ...entry, values } });
+    expect(seoProperties(withValues({ "seo-noindex": true }))).toMatchObject({ noindex: true, nofollow: false });
+    expect(seoProperties(withValues({ "seo-nofollow": true }))).toMatchObject({ noindex: false, nofollow: true });
+    expect(seoProperties(withValues({ "seo-noindex": false, "seo-nofollow": "true" }))).toMatchObject({
+      noindex: false,
+      nofollow: false,
+    });
+    // The option adds to the checkbox; it never turns it off.
+    expect(seoProperties({ ...withValues({ "seo-noindex": true }), noindex: false }).noindex).toBe(true);
+  });
+
+  it("words the robots directives", () => {
+    expect(robotsDirectives({ noindex: false, nofollow: false })).toBe("");
+    expect(robotsDirectives({ noindex: true, nofollow: false })).toBe("noindex");
+    expect(robotsDirectives({ noindex: false, nofollow: true })).toBe("nofollow");
+    expect(robotsDirectives({ noindex: true, nofollow: true })).toBe("noindex, nofollow");
+    expect(robotsFlags(undefined)).toEqual({ noindex: false, nofollow: false });
   });
 
   it("links the site's favicon, and only when there is one", () => {

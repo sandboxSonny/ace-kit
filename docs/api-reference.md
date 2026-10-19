@@ -65,16 +65,17 @@ Types: `AceSection`, `AceSectionBlock`, `SectionDefinition`, `SectionFieldDefini
 
 ## Live preview
 
-|                                                                          |                                                                                                                                                                |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `previewTokenFrom(url)`, `previewParameter`                              | The token in an address (`cms_preview`).                                                                                                                       |
-| `previewHeaders`                                                         | `Cache-Control: no-store`, `X-Robots-Tag: noindex`.                                                                                                            |
-| `framingPolicy(adminOrigin)`                                             | The `Content-Security-Policy` value that lets the admin app frame the site.                                                                                    |
-| `addFramingPolicy(headers, adminOrigin)`                                 | Adds that policy to a response's headers, keeping any policy the site already sends (only its `frame-ancestors` is replaced). Use this in your own middleware. |
-| `originOf(address)`                                                      | The origin of a web address (`https://admin.example.com`), or `null`.                                                                                          |
-| `isRefreshRequest(event, adminOrigin)`, `refreshMessageType`             | Whether a message is the editor asking for a refresh, from the right origin.                                                                                   |
-| `swapPageContent(current, fresh)`                                        | Swaps a page's content for a fresh copy without reloading.                                                                                                     |
-| `listenForPreviewRefresh(adminOrigin, refresh?)`, `refreshPageContent()` | In the browser: refresh when the editor asks (only the admin origin counts); returns a function that stops listening.                                          |
+|                                                                                          |                                                                                                                                                                |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `previewTokenFrom(url)`, `previewParameter`                                              | The token in an address (`cms_preview`).                                                                                                                       |
+| `previewHeaders`                                                                         | `Cache-Control: no-store`, `X-Robots-Tag: noindex`.                                                                                                            |
+| `robotsFlags(entry)`, `robotsDirectives(flags)`, `seoNoindexHandle`, `seoNofollowHandle` | What an entry's noindex and nofollow checkboxes say, and the `robots` value for them (`"noindex, nofollow"`, or `""`).                                         |
+| `framingPolicy(adminOrigin)`                                                             | The `Content-Security-Policy` value that lets the admin app frame the site.                                                                                    |
+| `addFramingPolicy(headers, adminOrigin)`                                                 | Adds that policy to a response's headers, keeping any policy the site already sends (only its `frame-ancestors` is replaced). Use this in your own middleware. |
+| `originOf(address)`                                                                      | The origin of a web address (`https://admin.example.com`), or `null`.                                                                                          |
+| `isRefreshRequest(event, adminOrigin)`, `refreshMessageType`                             | Whether a message is the editor asking for a refresh, from the right origin.                                                                                   |
+| `swapPageContent(current, fresh)`                                                        | Swaps a page's content for a fresh copy without reloading.                                                                                                     |
+| `listenForPreviewRefresh(adminOrigin, refresh?)`, `refreshPageContent()`                 | In the browser: refresh when the editor asks (only the admin origin counts); returns a function that stops listening.                                          |
 
 ## Types
 
