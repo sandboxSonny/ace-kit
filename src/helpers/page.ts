@@ -4,6 +4,7 @@ import type { AceEntry } from "../types/entries";
 import type { AcePage } from "../types/page";
 import { addressFromPath, isHomeAddress } from "./addressing";
 import { previewHeaders, previewTokenFrom } from "./preview";
+import { robotsDirectives, robotsFlags } from "./seo";
 
 /**
  * Works out what to do for a request: which entry to show, where to redirect, or which message to give. It does
@@ -35,7 +36,7 @@ export async function loadPage<Values = Record<string, unknown>>(
       previewToken,
     })) as AceEntry<Values> | null;
     return entry
-      ? { kind: "entry", status: 200, entry, headers }
+      ? { kind: "entry", status: 200, entry, headers: withRobotsHeader(entry, headers) }
       : notFoundOrRedirect(client, url, previewToken, headers);
   } catch (error) {
     if (error instanceof AcePreviewExpiredError) return { kind: "preview-expired", status: 403, headers };
@@ -45,6 +46,16 @@ export async function loadPage<Values = Record<string, unknown>>(
     }
     throw error;
   }
+}
+
+/**
+ * Adds `X-Robots-Tag` for an entry whose "noindex" or "nofollow" checkbox is ticked (the same as its meta tag, and
+ * it covers a page whose layout leaves `<AceSeo>` out). A preview already says noindex, so it only gains nofollow.
+ */
+function withRobotsHeader(entry: AceEntry<unknown>, headers: Record<string, string>): Record<string, string> {
+  const flags = robotsFlags(entry as { values?: Record<string, unknown> });
+  const directives = robotsDirectives({ ...flags, noindex: flags.noindex || headers["X-Robots-Tag"] === "noindex" });
+  return directives ? { ...headers, "X-Robots-Tag": directives } : headers;
 }
 
 /**
