@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import type { Plugin, ViteDevServer } from "vite";
 
-import { findSchemaFiles, schemaFilePattern } from "../sections/find-schemas";
+import { findFormFiles, findSchemaFiles, formFilePattern, schemaFilePattern } from "../sections/find-schemas";
 
 /** What running the sync came to: the lines it printed, and whether it failed. */
 export type SyncRun = { output: string[]; errors: string[]; failed: boolean };
@@ -52,9 +52,9 @@ function runSyncProgram(root: string): Promise<SyncRun> {
 }
 
 /**
- * Syncs a site's section types while its dev server runs: once when it starts, and again whenever a `*.schema.ts`
- * file is added, changed or removed. Each sync runs `ace-kit sync --automatic` (see the command for what it does and
- * doesn't do), serialised, and what it prints goes to the dev server's log. A site with no schema files is never
+ * Syncs a site's section types and forms while its dev server runs: once when it starts, and again whenever a
+ * `*.schema.ts` or `*.form.ts` file is added, changed or removed. Each sync runs `ace-kit sync --automatic` (see the command for what it does and
+ * doesn't do), serialised, and what it prints goes to the dev server's log. A site with no schema or form files is never
  * bothered. Returns a function that stops it.
  */
 export function startSectionSync(server: ViteDevServer, options: SectionSyncOptions = {}): () => void {
@@ -105,15 +105,15 @@ export function startSectionSync(server: ViteDevServer, options: SectionSyncOpti
   }
 
   const onFileEvent = (path: string) => {
-    if (schemaFilePattern.test(path) && !path.endsWith(".d.ts")) schedule();
+    if ((schemaFilePattern.test(path) || formFilePattern.test(path)) && !path.endsWith(".d.ts")) schedule();
   };
   for (const event of ["add", "change", "unlink"] as const) server.watcher.on(event, onFileEvent);
 
   // At start, only a site that has schema files is synced; the program would say nothing for one that has none, but
   // starting it takes a moment the dev server doesn't need to spend.
   const start = () => {
-    void findSchemaFiles(root).then((files) => {
-      if (files.length > 0) schedule();
+    void Promise.all([findSchemaFiles(root), findFormFiles(root)]).then(([schemaFiles, formFiles]) => {
+      if (schemaFiles.length + formFiles.length > 0) schedule();
     });
   };
   if (server.httpServer && !server.httpServer.listening) server.httpServer.once("listening", start);

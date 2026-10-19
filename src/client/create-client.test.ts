@@ -273,3 +273,64 @@ describe("getMenu", () => {
     expect(await clientWith(fetchSpy as unknown as typeof fetch).getMenu("nope")).toBeNull();
   });
 });
+
+describe("forms", () => {
+  const settings = { handle: "contact", name: "Contact", fields: [], thank_you: "Thanks!", turnstile_site_key: "" };
+
+  it("reads a form by its handle, and says null when the site has none", async () => {
+    const fetchSpy = vi.fn(async () => json(settings));
+    expect(await clientWith(fetchSpy as unknown as typeof fetch).getForm("contact")).toEqual(settings);
+    expect((fetchSpy.mock.calls[0] as unknown[])[0]).toBe("https://api.example.com/public/forms/contact");
+    const missing = vi.fn(async () => json({ error: "not found" }, 404));
+    expect(await clientWith(missing as unknown as typeof fetch).getForm("nope")).toBeNull();
+  });
+
+  it("sends what a visitor filled in, as the site's domain, and returns the thank-you", async () => {
+    const fetchSpy = vi.fn(async () => json({ message: "Thanks!" }, 201));
+    const result = await clientWith(fetchSpy as unknown as typeof fetch).submitForm("contact", {
+      values: { name: "Vic", updates: true },
+      turnstileToken: "tok",
+    });
+    expect(result).toEqual({ ok: true, message: "Thanks!" });
+    const [address, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
+    expect(address).toBe("https://api.example.com/public/forms/contact/submissions");
+    expect(init.method).toBe("POST");
+    expect((init.headers as Record<string, string>)["X-Ace-Site-Domain"]).toBe("example.test");
+    expect(JSON.parse(String(init.body))).toEqual({
+      values: { name: "Vic", updates: true },
+      honeypot: "",
+      turnstile_token: "tok",
+    });
+  });
+
+  it("is never answered from the cache: each send goes to the CMS", async () => {
+    const fetchSpy = vi.fn(async () => json({ message: "Thanks!" }, 201));
+    const client = clientWith(fetchSpy as unknown as typeof fetch, { cacheSeconds: 60 });
+    await client.submitForm("contact", { values: {} });
+    await client.submitForm("contact", { values: {} });
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns a refusal the visitor can act on in the CMS's words, and anything else as a plain apology", async () => {
+    const refused = (status: number, error: string) =>
+      clientWith((async () => json({ error }, status)) as unknown as typeof fetch).submitForm("contact", {
+        values: {},
+      });
+    expect(await refused(400, "Name is required")).toEqual({ ok: false, status: 400, error: "Name is required" });
+    expect(await refused(429, "this form has had a lot of messages")).toMatchObject({ ok: false, status: 429 });
+    expect(await refused(500, "internal error")).toEqual({
+      ok: false,
+      status: 500,
+      error: "Something went wrong sending that. Please try again.",
+    });
+  });
+
+  it("throws when the CMS can't be reached", async () => {
+    const fetchSpy = vi.fn(async () => {
+      throw new Error("down");
+    });
+    await expect(
+      clientWith(fetchSpy as unknown as typeof fetch).submitForm("contact", { values: {} }),
+    ).rejects.toBeInstanceOf(AceUnavailableError);
+  });
+});

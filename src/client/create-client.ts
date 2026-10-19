@@ -1,6 +1,7 @@
 import type { AceClientOptions } from "../types/client";
 import type { AceContentTypeSchema } from "../types/content-types";
 import type { AceContentTypeHandle, AceEntry, AceValuesOf } from "../types/entries";
+import type { AceForm, AceFormResult, AceFormSubmission } from "../types/forms";
 import type { AceMenu } from "../types/menus";
 import type { AceRedirect } from "../types/redirects";
 import type { AceSite } from "../types/site";
@@ -8,6 +9,8 @@ import type { AceSitemapEntry } from "../types/sitemap";
 import { AcePreviewExpiredError, AceUnavailableError } from "./errors";
 
 const requestTimeoutMilliseconds = 5000;
+/** Sending a form waits for the CMS to email the owners, which can take a few seconds. */
+const submitTimeoutMilliseconds = 20_000;
 
 /**
  * Most answers kept at once. Addresses come from visitors, so without a limit a stream of made-up ones (each a
@@ -130,6 +133,54 @@ export function createAceClient({
           /^https?:\/\/[^\s]+$/i.test(redirect.to)) &&
         (redirect.status === 301 || redirect.status === 302);
       return goesSomewhereSafe ? redirect : null;
+    },
+
+    /** One of the site's forms by its handle (its fields, the thank-you message, the Turnstile key); null if the site has none. */
+    getForm(handle: string): Promise<AceForm | null> {
+      return get<AceForm>(`/public/forms/${encodeURIComponent(handle)}`);
+    },
+
+    /**
+     * Sends what a visitor filled in. The CMS stores it, then emails the owners. A refusal comes back as
+     * `{ ok: false, status, error }` with an `error` the visitor can read (a missing field, a failed spam check, too
+     * many messages); a CMS that can't be reached throws AceUnavailableError.
+     */
+    async submitForm(handle: string, submission: AceFormSubmission): Promise<AceFormResult> {
+      let response: Response;
+      try {
+        response = await fetchImplementation(
+          `${apiUrl.replace(/\/+$/, "")}/public/forms/${encodeURIComponent(handle)}/submissions`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              "X-Ace-Site-Domain": siteDomain,
+              "X-Forwarded-Host": siteDomain,
+            },
+            body: JSON.stringify({
+              values: submission.values,
+              honeypot: submission.honeypot ?? "",
+              turnstile_token: submission.turnstileToken ?? "",
+            }),
+            signal: AbortSignal.timeout(submitTimeoutMilliseconds),
+          },
+        );
+      } catch {
+        throw new AceUnavailableError("Could not reach the CMS.");
+      }
+      const reply = (await response.json().catch(() => ({}))) as { message?: unknown; error?: unknown };
+      if (response.ok) {
+        return { ok: true, message: typeof reply.message === "string" ? reply.message : "Thank you." };
+      }
+      // A refusal the visitor can act on (400, 404, 429, 503 from the spam check) carries its own words; anything
+      // else is the CMS's trouble, not theirs.
+      const visitorCanAct = [400, 404, 429, 503].includes(response.status) && typeof reply.error === "string";
+      return {
+        ok: false,
+        status: response.status,
+        error: visitorCanAct ? (reply.error as string) : "Something went wrong sending that. Please try again.",
+      };
     },
 
     /** The site's live pages for its sitemap, by path. Pages of content types that have no pages of their own are left out. */

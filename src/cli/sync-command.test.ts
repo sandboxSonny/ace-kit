@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { defineForm } from "../forms/define-form";
 import { defineSection } from "../sections/define-section";
 import { fakeEnvironment, json } from "./fake-environment";
 import type { Routes } from "./fake-environment";
@@ -130,11 +131,13 @@ describe("ace-kit sync", () => {
     expect(shown).toContain("Nothing was synced");
   });
 
-  it("sends nothing when there are no schema files, since that would retire every section", async () => {
+  it("sends nothing when there are no schema or form files, since that would retire every section and form", async () => {
     const created = await setup({});
     expect(await runCli(["sync"], created.environment)).toBe(0);
     expect(created.requests).toEqual([]);
-    expect(created.output.join("\n")).toContain("No *.schema.ts files found in src or app, so nothing was synced");
+    expect(created.output.join("\n")).toContain(
+      "No *.schema.ts or *.form.ts files found in src or app, so nothing was synced",
+    );
   });
 
   it("says to sign in, and sends nothing, when there is no login", async () => {
@@ -380,5 +383,98 @@ describe("ace-kit sync --automatic (what the dev server runs on a save)", () => 
     expect(await runCli(["sync", "--automatic"], created.environment)).toBe(1);
     expect(created.errors.join()).toContain("Broken.schema.ts: could not be loaded: boom");
     expect(created.requests).toEqual([]);
+  });
+
+  describe("forms", () => {
+    const contact = defineForm({
+      handle: "contact",
+      name: "Contact",
+      fields: [
+        { handle: "name", label: "Name", type: "text", required: true },
+        { handle: "topic", label: "Topic", type: "select", options: ["Quote", "Other"] },
+      ],
+    });
+    const formRoutes: Routes = {
+      "GET http://localhost:8080/sites": () => json([{ id: 5, domain: "localhost" }]),
+      "PUT http://localhost:8080/sites/5/section-types": () =>
+        json({ sections: [{ handle: "hero", name: "Hero" }], warnings: [] }),
+      "PUT http://localhost:8080/sites/5/forms": () =>
+        json({
+          forms: [
+            { handle: "contact", name: "Contact" },
+            { handle: "old", name: "Old", retired_at: "2026-10-01T00:00:00Z" },
+          ],
+        }),
+    };
+
+    it("sends every form found, as the CMS takes them, and says what it did", async () => {
+      const created = await setup({ "contact.form.ts": { default: contact } }, { routes: formRoutes });
+      expect(await runCli(["sync"], created.environment)).toBe(0);
+      expect(created.output.join("\n")).toBe(
+        "Synced 1 form (contact) to localhost (http://localhost:8080). No longer in your code, no longer taking messages: old.",
+      );
+      const put = created.requests.find((request) => request.init?.method === "PUT")!;
+      expect(put.address).toBe("http://localhost:8080/sites/5/forms");
+      expect(JSON.parse(String(put.init?.body))).toEqual({
+        forms: [
+          {
+            handle: "contact",
+            name: "Contact",
+            fields: [
+              { handle: "name", label: "Name", kind: "text", required: true },
+              { handle: "topic", label: "Topic", kind: "select", required: false, options: ["Quote", "Other"] },
+            ],
+          },
+        ],
+      });
+    });
+
+    it("syncs sections and forms together, and a site with only one kind never touches the other", async () => {
+      const both = await setup(
+        { "Hero.schema.ts": { default: hero }, "contact.form.ts": { default: contact } },
+        { routes: formRoutes },
+      );
+      expect(await runCli(["sync"], both.environment)).toBe(0);
+      expect(synced(both).map((request) => request.address)).toEqual([
+        "http://localhost:8080/sites/5/section-types",
+        "http://localhost:8080/sites/5/forms",
+      ]);
+
+      await rm(join(root, "src"), { recursive: true, force: true });
+      const onlySections = await setup({ "Hero.schema.ts": { default: hero } }, { routes: formRoutes });
+      await runCli(["sync"], onlySections.environment);
+      expect(synced(onlySections).map((request) => request.address)).toEqual([
+        "http://localhost:8080/sites/5/section-types",
+      ]);
+
+      await rm(join(root, "src"), { recursive: true, force: true });
+      const onlyForms = await setup({ "contact.form.ts": { default: contact } }, { routes: formRoutes });
+      await runCli(["sync"], onlyForms.environment);
+      expect(synced(onlyForms).map((request) => request.address)).toEqual(["http://localhost:8080/sites/5/forms"]);
+    });
+
+    it("sends nothing at all if any form file can't be used, sections included", async () => {
+      const created = await setup({
+        "Hero.schema.ts": { default: hero },
+        "bad.form.ts": { default: { handle: "bad", name: "Bad", fields: [{ handle: "x", label: "X", type: "file" }] } },
+      });
+      expect(await runCli(["sync"], created.environment)).toBe(1);
+      expect(created.requests).toEqual([]);
+      expect(created.errors.join("\n")).toContain('bad.form.ts: field "x" has a type "file" that isn\'t one of');
+    });
+
+    it("explains a refusal in terms of forms", async () => {
+      const created = await setup(
+        { "contact.form.ts": { default: contact } },
+        {
+          routes: {
+            "GET http://localhost:8080/sites": () => json([{ id: 5, domain: "localhost" }]),
+            "PUT http://localhost:8080/sites/5/forms": () => json({ error: "forbidden" }, 403),
+          },
+        },
+      );
+      expect(await runCli(["sync"], created.environment)).toBe(1);
+      expect(created.errors.join("\n")).toContain("can't change this site's forms");
+    });
   });
 });
