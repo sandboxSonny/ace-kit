@@ -1,6 +1,6 @@
 {
   "name": "@sandboxsonny/ace-kit",
-  "version": "0.14.2",
+  "version": "0.15.0",
   "description": "Everything a website needs to use CMS Ace: a typed client, addressing, images, menus, rich text, live preview, and Astro and React adapters.",
   "keywords": [
     "cms",
