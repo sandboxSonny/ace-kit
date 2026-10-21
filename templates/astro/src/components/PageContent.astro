@@ -8,6 +8,7 @@ import type { AceEntry } from "@sandboxsonny/ace-kit";
 
 import AceSections from "@sandboxsonny/ace-kit/astro/AceSections.astro";
 
+import ContactForm from "~/components/sections/ContactForm.astro";
 import Faq from "~/components/sections/Faq.astro";
 import Gallery from "~/components/sections/Gallery.astro";
 import Hero from "~/components/sections/Hero.astro";
@@ -59,7 +60,7 @@ const { headline, body, hero, published, button, content } = entry.values;
     }
   </div>
 </section>
-<AceSections sections={content} components={{ hero: Hero, faq: Faq, gallery: Gallery }} />
+<AceSections sections={content} components={{ hero: Hero, faq: Faq, gallery: Gallery, "contact-form": ContactForm }} />
 <style>
   .prose {
     max-width: 42rem;

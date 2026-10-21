@@ -1,0 +1,115 @@
+---
+import AceTurnstile from "@sandboxsonny/ace-kit/astro/AceTurnstile.astro";
+
+import type { SectionOf } from "@sandboxsonny/ace-kit";
+import type contactForm from "./ContactForm.schema";
+
+type Props = {
+  section: SectionOf<typeof contactForm>;
+};
+
+const { section } = Astro.props;
+const { heading, intro, button } = section.values;
+---
+
+<section class="section" data-section={section.type}>
+  <div class="container contact">
+    {heading && <h2>{heading}</h2>}
+    {intro && <p class="intro">{intro}</p>}
+    {/* The browser posts to /api/contact (src/pages/api/contact.ts), which hands the message to the CMS. */}
+    <form class="contact__form" method="post" action="/api/contact" data-contact-form>
+      <label>
+        Name
+        <input type="text" name="name" autocomplete="name" required />
+      </label>
+      <label>
+        Email
+        <input type="email" name="email" autocomplete="email" required />
+      </label>
+      <label>
+        Message
+        <textarea name="message" rows="6" required></textarea>
+      </label>
+      {/* A field no person sees. Bots fill it in, and the CMS then keeps and sends nothing. */}
+      <div class="contact__trap" aria-hidden="true">
+        <label>
+          Leave this empty
+          <input type="text" name="honeypot" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+      {/* Draws Cloudflare Turnstile when the site's owners have turned it on in the CMS, and nothing otherwise. */}
+      <AceTurnstile form="contact" />
+      <button type="submit" class="button">
+        {button || "Send message"}
+      </button>
+      <p class="contact__status" role="status" aria-live="polite" data-contact-status></p>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { enhanceContactForm } from "~/scripts/contactForm";
+
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-contact-form]")) enhanceContactForm(form);
+</script>
+
+<style>
+  .contact {
+    max-width: 36rem;
+  }
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.75rem;
+  }
+  .intro {
+    margin: 0 0 1.5rem;
+    color: var(--colour-muted);
+  }
+  .contact__form {
+    display: grid;
+    gap: 1rem;
+  }
+  label {
+    display: grid;
+    gap: 0.25rem;
+    font-weight: 600;
+  }
+  input,
+  textarea {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--colour-muted);
+    border-radius: 0.5rem;
+    font: inherit;
+    font-weight: 400;
+    color: inherit;
+    background: var(--colour-background);
+  }
+  .contact__trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  button {
+    justify-self: start;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .contact__status {
+    margin: 0;
+    min-height: 1.5em;
+  }
+  .contact__status[data-state="success"] {
+    color: #1a7f37;
+  }
+  .contact__status[data-state="error"] {
+    color: #b42318;
+  }
+</style>

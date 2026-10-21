@@ -24,7 +24,7 @@ One command makes everything a new site needs:
 
 1. **Checks** the folder, the domain and the name, before anything is made.
 2. **Signs you in** if you aren't already (your browser opens; type the code from the terminal, as in [Signing in](#signing-in)).
-3. **Makes the site in CMS Ace** and gives it a starter: a `pages` content type, Home, About and Contact entries, a main menu and the three example section types (hero, FAQ, gallery).
+3. **Makes the site in CMS Ace** and gives it a starter: a `pages` content type, Home, About and Contact entries, a main menu and the example section types (hero, FAQ, gallery and, with Astro, a contact form). The Astro starter also has a sitemap, a `robots.txt` and a working contact form, and the Contact page shows it.
 4. **Copies a starter site** into `my-site/` with its name, domain and package name filled in.
 
 If a site with that domain already exists in CMS Ace, it is **left alone** (nothing is added to it, in case it has real content), a warning says so, and only the folder is made. If the CMS refuses to make the site (for instance, you have made as many as your account allows) nothing is made at all.

@@ -21,6 +21,10 @@ declare module "@sandboxsonny/ace-kit" {
       "seo-title": string;
       /** SEO description */
       "seo-description": string;
+      /** Hide from search engines (noindex) */
+      "seo-noindex"?: boolean;
+      /** Don't follow links (nofollow) */
+      "seo-nofollow"?: boolean;
     };
   }
 }

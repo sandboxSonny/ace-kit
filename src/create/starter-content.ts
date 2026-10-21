@@ -9,6 +9,9 @@ const richText = (text: string) => ({
 /** Which starters draw sections (they all have components for the hero, FAQ and gallery). */
 export const frameworksWithSections: readonly Framework[] = ["astro", "react-router"];
 
+/** Which starters have a contact form section, so the Contact page can show it. */
+export const frameworksWithContactForm: readonly Framework[] = ["astro"];
+
 /**
  * The fields of the `pages` content type the starter's pages read. `sections` is left out for a starter without them.
  * The CMS adds the SEO title and description to every content type, so they aren't listed here; the entries below fill them in.
@@ -130,6 +133,21 @@ export function starterEntries(framework: Framework, siteName: string): StarterE
         body: richText("Tell people how to get in touch."),
         // A link to another entry of the site: it needs About's ID, which exists by now.
         button: (entryIds: Record<string, number>) => ({ entryId: entryIds.about, label: "Learn about us" }),
+        ...(frameworksWithContactForm.includes(framework) && {
+          content: [
+            {
+              id: "contact-form",
+              type: "contact-form",
+              values: {
+                heading: "Send us a message",
+                intro:
+                  "Fill this in and we will get back to you. Messages are emailed to the people chosen under Forms in the CMS.",
+                button: "Send message",
+              },
+              blocks: [],
+            },
+          ],
+        }),
       },
     },
   ];

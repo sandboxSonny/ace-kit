@@ -27,14 +27,7 @@ const { entry, title, description = "A simple example site for testing CMS Ace."
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {/* Title, description, canonical address, robots and sharing tags. A draft shown in preview is kept out of search. */}
-    <AceSeo
-      entry={entry}
-      {title}
-      {description}
-      siteName="Example Site"
-
-      noindex={preview}
-    />
+    <AceSeo entry={entry} {title} {description} siteName="Example Site" noindex={preview} />
   </head>
   <body>
     <SiteHeader />
