@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.1.7",
-    "@sandboxsonny/ace-kit": "file:../ace-kit/sandboxsonny-ace-kit-0.7.0.tgz",
+    "@sandboxsonny/ace-kit": "^0.14.2",
     "astro": "^7.3.8",
     "astro-seo": "^1.2.0"
   },

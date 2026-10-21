@@ -8,6 +8,8 @@ src/
   pages/api/contact.ts <- where the browser sends it (two lines)
 ```
 
+A site made with `npx @sandboxsonny/ace-kit create` (the Astro starter) already has all of this: `src/contact.form.ts`, `src/pages/api/contact.ts` and a **Contact form** section on its Contact page, with a honeypot and Turnstile built in. Messages are stored from the start; they are emailed once the owners add recipients under Forms in the CMS.
+
 ## Describing a form
 
 ```ts
@@ -41,10 +43,11 @@ The browser never talks to the CMS: it posts to an endpoint on your site, which 
 
 ```ts
 // src/pages/api/contact.ts
+import type { APIRoute } from "astro";
 import { getFormSubmitResponse } from "@sandboxsonny/ace-kit/astro";
 
 export const prerender = false;
-export const POST = ({ request }) => getFormSubmitResponse({ request }, "contact");
+export const POST: APIRoute = ({ request }) => getFormSubmitResponse({ request }, "contact");
 ```
 
 **React Router** (a route `route("api/contact", "routes/contact.tsx")`, before the catch-all)

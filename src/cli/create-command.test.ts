@@ -85,6 +85,7 @@ describe("ace-kit create", () => {
       preview_url: "http://localhost:4321",
     });
     expect(bodyOf(sectionTypes!).sections.map((section: { handle: string }) => section.handle)).toEqual([
+      "contact-form",
       "faq",
       "gallery",
       "hero",
