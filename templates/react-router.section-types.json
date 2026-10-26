@@ -1,6 +1,31 @@
 {
   "sections": [
     {
+      "handle": "contact-form",
+      "name": "Contact form",
+      "fields": [
+        {
+          "handle": "heading",
+          "label": "Heading",
+          "component_key": "text",
+          "config": {}
+        },
+        {
+          "handle": "intro",
+          "label": "Introduction",
+          "component_key": "textarea",
+          "config": {}
+        },
+        {
+          "handle": "button",
+          "label": "Button text",
+          "component_key": "text",
+          "config": {}
+        }
+      ],
+      "blocks": []
+    },
+    {
       "handle": "faq",
       "name": "FAQ",
       "fields": [

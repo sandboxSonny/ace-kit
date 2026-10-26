@@ -37,14 +37,10 @@ describe("the sections the starter entries use", () => {
     for (const type of sectionsUsedBy(framework)) expect(known, type).toContain(type);
   });
 
-  it("puts a contact form on the Astro starter's Contact page", () => {
-    const contact = starterEntries("astro", "Acme").find((entry) => entry.handle === "contact");
+  it.each<Framework>(["astro", "react-router"])("puts a contact form on the %s starter's Contact page", (framework) => {
+    const contact = starterEntries(framework, "Acme").find((entry) => entry.handle === "contact");
     const sections = contact?.values.content as { type: string; values: Record<string, unknown> }[];
     expect(sections.map((section) => section.type)).toEqual(["contact-form"]);
     expect(sections[0].values.button).toBe("Send message");
-  });
-
-  it("leaves the contact form off a starter that has no component for it", () => {
-    expect(sectionsUsedBy("react-router")).not.toContain("contact-form");
   });
 });

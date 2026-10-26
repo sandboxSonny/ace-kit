@@ -174,6 +174,7 @@ describe("ace-kit create", () => {
     ).toBe(0);
     const sectionTypes = created.requests.find((request) => request.address.endsWith("/section-types"))!;
     expect(bodyOf(sectionTypes).sections.map((section: { handle: string }) => section.handle)).toEqual([
+      "contact-form",
       "faq",
       "gallery",
       "hero",
