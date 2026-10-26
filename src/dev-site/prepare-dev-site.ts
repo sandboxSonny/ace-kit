@@ -8,6 +8,8 @@ import type { DevSite } from "./find-or-create";
 export type PrepareOutcome =
   | { kind: "off" }
   | { kind: "ready"; site: DevSite; created: boolean }
+  /** The site hasn't launched yet: the dev server works on it directly, as nobody else uses it. */
+  | { kind: "building"; site: DevSite }
   | { kind: "waiting-for-login"; apiUrl: string }
   | { kind: "problem"; message: string };
 
@@ -49,6 +51,8 @@ export async function prepareDevSite(options: {
     case "created":
     case "found":
       return { kind: "ready", site: outcome.site, created: outcome.kind === "created" };
+    case "building":
+      return { kind: "building", site: outcome.site };
     case "login-ended":
       return { kind: "waiting-for-login", apiUrl };
     case "site-not-found":

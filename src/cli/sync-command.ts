@@ -71,11 +71,14 @@ export async function syncCommand(commandArguments: string[], environment: CliEn
   const given = values.site ?? values.domain ?? environment.variables.ACE_SITE_DOMAIN;
   const siteDomain = given ? domainFromSite(given) : "localhost";
 
-  // The dev server points the process at the developer's own dev site (see startDevSite): syncing to that is safe.
+  // The dev server points the process at the developer's own dev site, or at a site that hasn't launched (see
+  // startDevSite): syncing to either is safe.
   const aimedAtDevSite = environment.variables.ACE_DEV_SITE_ACTIVE === "1";
+  const siteBuilding = environment.variables.ACE_SITE_BUILDING === "1";
   if (
     automatic &&
     !aimedAtDevSite &&
+    !siteBuilding &&
     !isLocalApiUrl(apiUrl) &&
     environment.variables.ACE_SYNC_SECTIONS?.trim().toLowerCase() !== "remote"
   ) {

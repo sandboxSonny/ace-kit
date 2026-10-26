@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { AcePreviewExpiredError, AceUnavailableError } from "./errors";
-import { createAceClient, maximumCachedAnswers } from "./create-client";
+import { createAceClient, environmentFromProcess, maximumCachedAnswers } from "./create-client";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 const entry = { id: 1, content_type_handle: "pages", handle: "home", title: "Home", values: { headline: "Hi" } };
@@ -58,6 +58,42 @@ describe("getEntry", () => {
     await expect(clientWith(garbage as unknown as typeof fetch).getEntry("pages", "home")).rejects.toThrow(
       "could not be read",
     );
+  });
+});
+
+describe("the environment", () => {
+  it("tells the CMS whether this is the production website, so a site being built launches on its first real read", async () => {
+    const fetchSpy = vi.fn(async () => json(entry));
+    await createAceClient({
+      apiUrl: "https://api.example.com",
+      siteDomain: "example.test",
+      environment: "production",
+      fetchImplementation: fetchSpy as unknown as typeof fetch,
+    }).getEntry("pages", "home");
+    const [, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
+    expect((init.headers as Record<string, string>)["X-Ace-Environment"]).toBe("production");
+  });
+
+  it("works it out from the process when the site doesn't say", () => {
+    const saved = { ...process.env };
+    try {
+      process.env.ACE_ENVIRONMENT = "production";
+      expect(environmentFromProcess()).toBe("production");
+      delete process.env.ACE_ENVIRONMENT;
+      expect(environmentFromProcess()).toBe("development"); // a test run
+      delete process.env.VITEST;
+      process.env.NODE_ENV = "development";
+      expect(environmentFromProcess()).toBe("development");
+      process.env.NODE_ENV = "production";
+      expect(environmentFromProcess()).toBe("production");
+      delete process.env.NODE_ENV;
+      expect(environmentFromProcess()).toBe("production"); // a deployed server that sets nothing
+    } finally {
+      for (const name of ["ACE_ENVIRONMENT", "VITEST", "NODE_ENV"]) {
+        if (saved[name] === undefined) delete process.env[name];
+        else process.env[name] = saved[name];
+      }
+    }
   });
 });
 

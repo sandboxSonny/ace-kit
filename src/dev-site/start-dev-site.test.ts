@@ -10,12 +10,16 @@ const dev = { id: 9, name: "Acme (dev)", domain: "dev-3.acme.test" };
 const saved = {
   domain: process.env.ACE_SITE_DOMAIN,
   active: process.env.ACE_DEV_SITE_ACTIVE,
+  building: process.env.ACE_SITE_BUILDING,
+  environment: process.env.ACE_ENVIRONMENT,
   vitest: process.env.VITEST,
 };
 afterEach(() => {
   for (const [name, value] of [
     ["ACE_SITE_DOMAIN", saved.domain],
     ["ACE_DEV_SITE_ACTIVE", saved.active],
+    ["ACE_SITE_BUILDING", saved.building],
+    ["ACE_ENVIRONMENT", saved.environment],
     ["VITEST", saved.vitest],
   ] as const) {
     if (value === undefined) delete process.env[name];
@@ -64,6 +68,25 @@ describe("startDevSite", () => {
     expect(created.messages.join("\n")).toMatch(
       /Made you a dev site.*live site is not touched|live site is not touched/s,
     );
+  });
+
+  it("works on the site itself while it hasn't launched, as it has no dev site until then", async () => {
+    const building = setup({}, true, json({ error: "the site is still being built", code: "building" }, 409));
+    const session = await building.start();
+    expect(session).toBeNull();
+    expect(process.env.ACE_SITE_DOMAIN).toBe("acme.test");
+    expect(process.env.ACE_SITE_BUILDING).toBe("1");
+    expect(process.env.ACE_DEV_SITE_ACTIVE).toBeUndefined();
+    expect(building.messages.join("\n")).toMatch(
+      /hasn't launched yet.*content you enter now is the content it launches with/s,
+    );
+    expect(building.messages.join("\n")).not.toMatch(/^warn:/m);
+  });
+
+  it("marks everything this process reads from the CMS as a developer's", async () => {
+    delete process.env.ACE_ENVIRONMENT;
+    await setup({}).start();
+    expect(process.env.ACE_ENVIRONMENT).toBe("development");
   });
 
   it("takes the site's domain from the site setting (Astro's `site`) when ACE_SITE_DOMAIN is not set", async () => {

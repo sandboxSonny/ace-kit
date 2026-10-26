@@ -360,6 +360,14 @@ describe("ace-kit sync --automatic (what the dev server runs on a save)", () => 
     expect(await runCli(["sync", "--automatic"], onDevSite.environment)).toBe(0);
     expect(synced(onDevSite)).toHaveLength(1);
 
+    // So is a site that hasn't launched, which the dev server works on directly.
+    const building = await setup(
+      { "Hero.schema.ts": { default: hero } },
+      { apiUrl: hosted, routes, variables: { ACE_API_URL: hosted, ACE_SITE_BUILDING: "1" } },
+    );
+    expect(await runCli(["sync", "--automatic"], building.environment)).toBe(0);
+    expect(synced(building)).toHaveLength(1);
+
     // Typing the command yourself is always allowed.
     const manual = await setup(
       { "Hero.schema.ts": { default: hero } },

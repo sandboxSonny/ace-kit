@@ -59,7 +59,7 @@ export { renderTextArea } from "./helpers/text-area";
 export { headingLevel, listStart, renderRichText, richTextImageSizes } from "./helpers/rich-text";
 
 export type { AceAddress } from "./types/addressing";
-export type { AceClientOptions } from "./types/client";
+export type { AceClientOptions, AceEnvironment } from "./types/client";
 export type { AceContentTypeSchema, AceFieldSchema } from "./types/content-types";
 export type { AceContentTypeHandle, AceContentTypes, AceEntry, AceValuesOf } from "./types/entries";
 export type { AceForm, AceFormField, AceFormResult, AceFormSubmission } from "./types/forms";

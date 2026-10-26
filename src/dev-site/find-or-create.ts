@@ -5,6 +5,8 @@ export type DevSite = { id: number; name: string; domain: string };
 export type DevSiteOutcome =
   | { kind: "created"; site: DevSite }
   | { kind: "found"; site: DevSite }
+  /** The site hasn't launched yet, so it has no dev sites: the developer works on `site`, the site itself. */
+  | { kind: "building"; site: DevSite }
   | { kind: "login-ended" }
   | { kind: "site-not-found"; domain: string; available: string[] }
   | { kind: "forbidden"; message: string }
@@ -87,6 +89,14 @@ export async function findOrCreateDevSite(options: {
       kind: "forbidden",
       message: await readMessage(response, "Your account can't have a dev site of this site."),
     };
+  }
+  if (response.status === 409) {
+    const reply = (await response
+      .clone()
+      .json()
+      .catch(() => ({}))) as { code?: unknown };
+    if (reply.code === "building")
+      return { kind: "building", site: { id: site.id, name: site.name, domain: site.domain } };
   }
   if (!response.ok) {
     return {

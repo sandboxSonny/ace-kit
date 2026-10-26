@@ -67,6 +67,16 @@ describe("findOrCreateDevSite", () => {
     expect(await promise).toEqual({ kind: "site-not-found", domain: "nope.test", available: ["acme.test"] });
   });
 
+  it("says when the site hasn't launched, so it has no dev site and is worked on directly", async () => {
+    const { promise } = run({ sites: json([live]), put: json({ error: "still being built", code: "building" }, 409) });
+    expect(await promise).toEqual({ kind: "building", site: { id: 7, name: "Acme", domain: "acme.test" } });
+    // Any other conflict is the CMS refusing.
+    expect(await run({ sites: json([live]), put: json({ error: "busy" }, 409) }).promise).toEqual({
+      kind: "rejected",
+      message: "busy",
+    });
+  });
+
   it("reports an ended login, a refusal, a rejection and an unreachable CMS", async () => {
     expect(await run({ sites: json({}, 401) }).promise).toEqual({ kind: "login-ended" });
     expect(await run({ sites: json([live]), put: json({}, 401) }).promise).toEqual({ kind: "login-ended" });
