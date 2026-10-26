@@ -40,6 +40,8 @@ export type StartDevSiteOptions = {
  * Called when a dev server starts. If the site works against a hosted CMS (or ACE_DEV_SITE=true), gets the
  * developer's private dev site of it and points the process at it: ACE_SITE_DOMAIN becomes the dev site's domain, so
  * the site reads its dev copy, and ACE_DEV_SITE_ACTIVE tells the section sync that it is safe to sync to a hosted CMS.
+ * A site that hasn't launched has no dev site: the dev server works on it directly, and ACE_SITE_BUILDING tells the
+ * section sync that this is safe too.
  * Anything that stops this (not signed in, not allowed, the CMS unreachable) is said once, and the dev server carries
  * on with the settings it was given. Returns null when there is no dev site.
  */
@@ -47,6 +49,9 @@ export async function startDevSite(options: StartDevSiteOptions): Promise<DevSit
   const { root, mode, log } = options;
   // A site's own tests start a dev server too, and must not reach out to a CMS.
   if (mode === "test" || process.env.VITEST) return null;
+
+  // Anything this process reads from the CMS is a developer's, never the production website (see environmentFromProcess).
+  process.env.ACE_ENVIRONMENT ??= "development";
 
   const base = options.environment?.variables ?? { ...loadEnv(mode, root, "ACE_"), ...process.env };
   const realDomain = base.ACE_SITE_DOMAIN?.trim() || options.siteDomain?.trim() || "localhost";
@@ -79,9 +84,23 @@ export async function startDevSite(options: StartDevSiteOptions): Promise<DevSit
     case "problem":
       log.warn(`No dev site: ${outcome.message} Showing the live site, and section sync is off.`);
       return null;
+    case "building":
+      // Nobody but the people building the site uses it yet, so there is nothing to keep apart: work on it directly,
+      // and the content entered now is the content it launches with.
+      process.env.ACE_SITE_DOMAIN = outcome.site.domain;
+      process.env.ACE_SITE_BUILDING = "1";
+      delete process.env.ACE_DEV_SITE_ACTIVE;
+      log.info(
+        `"${outcome.site.name}" (${outcome.site.domain}) hasn't launched yet, so this dev server reads and syncs to it directly: ` +
+          "the content you enter now is the content it launches with. Once it launches (from CMS Settings, or by itself " +
+          "when the deployed site first reads from it) you'll get a private dev site instead. Its preview address is " +
+          "unchanged; set it in CMS Settings to preview localhost.",
+      );
+      return null;
     case "ready": {
       process.env.ACE_SITE_DOMAIN = outcome.site.domain;
       process.env.ACE_DEV_SITE_ACTIVE = "1";
+      delete process.env.ACE_SITE_BUILDING;
       log.info(
         outcome.created
           ? `Made you a dev site, "${outcome.site.name}", as a copy of the live site (${outcome.site.domain}). ` +

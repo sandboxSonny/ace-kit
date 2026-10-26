@@ -2,6 +2,21 @@
 
 When your site's dev server works against a hosted CMS, it doesn't touch the live site. It works on a **dev site**: a private copy of the site that only you can see. You can change section types, try new fields and edit test content freely; the live site, and everyone editing it, never notice.
 
+## While a site is being built
+
+A site you've just made (with `npx ace-kit create`, or in the admin app) is **being built** until it launches, and has no dev site. Nobody else is editing it and nobody visits it yet, so there is nothing to keep apart: the dev server reads from the site itself, and syncs your sections and forms to it on every save. The content you enter while building is the content the site launches with, so you only enter it once.
+
+```
+[ace-kit] "Acme" (acme.com) hasn't launched yet, so this dev server reads and syncs to it directly: the content you enter now is the content it launches with. ...
+```
+
+A site launches when:
+
+- an owner presses **Launch site** on its Settings page in the admin app, or
+- its production website first reads from the CMS. Ace Kit tells the CMS which it is: a dev server, a test run and `ace-kit generate` say `development`, anything else (a deployed server, a production build) says `production`. Set `ACE_ENVIRONMENT=development` on a staging deploy that shouldn't launch the site.
+
+Launching can't be undone. From then on, everything below applies.
+
 ## How it works
 
 On start, the dev server (the Astro integration, or the `ace()` Vite plugin on React Router):
@@ -31,6 +46,7 @@ A dev site is never merged into the live site. When your change is ready, deploy
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `ACE_DEV_SITE`      | `false` stops the dev server using a dev site. `true` uses one even against a CMS on your own machine. Default: on for a hosted CMS only. |
 | `ACE_SYNC_SECTIONS` | See [sections](./sections.md).                                                                                                            |
+| `ACE_ENVIRONMENT`   | `production` or `development`: what the site tells the CMS it is. Default: worked out as above.                                           |
 
 ## If something stops it
 

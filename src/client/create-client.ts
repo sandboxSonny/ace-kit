@@ -1,4 +1,4 @@
-import type { AceClientOptions } from "../types/client";
+import type { AceClientOptions, AceEnvironment } from "../types/client";
 import type { AceContentTypeSchema } from "../types/content-types";
 import type { AceContentTypeHandle, AceEntry, AceValuesOf } from "../types/entries";
 import type { AceForm, AceFormResult, AceFormSubmission } from "../types/forms";
@@ -19,14 +19,29 @@ const submitTimeoutMilliseconds = 20_000;
 export const maximumCachedAnswers = 500;
 
 /**
+ * Where this process is running, when the site doesn't say: ACE_ENVIRONMENT if it is set, development under a dev
+ * server (which sets ACE_ENVIRONMENT itself) or a test run, and otherwise production. A platform with no `process`
+ * (an edge runtime) is a deployed site, so production.
+ */
+export function environmentFromProcess(): AceEnvironment {
+  const variables = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {};
+  const given = variables.ACE_ENVIRONMENT?.trim().toLowerCase();
+  if (given === "production" || given === "development") return given;
+  if (variables.VITEST || variables.NODE_ENV === "test" || variables.NODE_ENV === "development") return "development";
+  return "production";
+}
+
+/**
  * A client for the CMS Ace public API. It runs on the server only, so the visitor's browser never talks to the
  * API. The API finds the site from X-Ace-Site-Domain, which this client sets to the site's domain. X-Forwarded-Host
  * is sent too, for an API that predates the first (some platforms' proxies rewrite X-Forwarded-Host on the way in).
+ * X-Ace-Environment says whether this is the production website, which launches a site that is still being built.
  */
 export function createAceClient({
   apiUrl,
   siteDomain,
   cacheSeconds = 5,
+  environment = environmentFromProcess(),
   fetchImplementation = (input, init) => fetch(input, init),
   now = Date.now,
 }: AceClientOptions) {
@@ -49,7 +64,12 @@ export function createAceClient({
     let response: Response;
     try {
       response = await fetchImplementation(`${apiUrl.replace(/\/+$/, "")}${path}`, {
-        headers: { Accept: "application/json", "X-Ace-Site-Domain": siteDomain, "X-Forwarded-Host": siteDomain },
+        headers: {
+          Accept: "application/json",
+          "X-Ace-Site-Domain": siteDomain,
+          "X-Forwarded-Host": siteDomain,
+          "X-Ace-Environment": environment,
+        },
         signal: AbortSignal.timeout(requestTimeoutMilliseconds),
       });
     } catch {
@@ -157,6 +177,7 @@ export function createAceClient({
               "Content-Type": "application/json",
               "X-Ace-Site-Domain": siteDomain,
               "X-Forwarded-Host": siteDomain,
+              "X-Ace-Environment": environment,
             },
             body: JSON.stringify({
               values: submission.values,

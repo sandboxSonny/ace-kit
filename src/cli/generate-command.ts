@@ -48,6 +48,8 @@ export async function generateCommand(commandArguments: string[], environment: C
     apiUrl,
     siteDomain,
     cacheSeconds: 0,
+    // Run from a developer's machine (or a build step before the site is live), never as the production website.
+    environment: "development",
     fetchImplementation: environment.fetchImplementation,
   });
   const contentTypes = await client.getContentTypes();
