@@ -10,7 +10,7 @@ const richText = (text: string) => ({
 export const frameworksWithSections: readonly Framework[] = ["astro", "react-router"];
 
 /** Which starters have a contact form section, so the Contact page can show it. */
-export const frameworksWithContactForm: readonly Framework[] = ["astro"];
+export const frameworksWithContactForm: readonly Framework[] = ["astro", "react-router"];
 
 /**
  * The fields of the `pages` content type the starter's pages read. `sections` is left out for a starter without them.

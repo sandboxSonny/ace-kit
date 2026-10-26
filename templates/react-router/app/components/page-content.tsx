@@ -2,6 +2,7 @@ import { formatAceDate } from "@sandboxsonny/ace-kit";
 import type { AceEntry } from "@sandboxsonny/ace-kit";
 import { AceImage, AceLink, AceRichText, AceSections, AceTextArea } from "@sandboxsonny/ace-kit/react-router";
 
+import { ContactForm } from "~/components/sections/contact-form";
 import { Faq } from "~/components/sections/faq";
 import { Gallery } from "~/components/sections/gallery";
 import { Hero } from "~/components/sections/hero";
@@ -49,7 +50,10 @@ export function PageContent({ entry }: { entry: AceEntry<PageValues> }) {
           }
         </div>
       </section>
-      <AceSections sections={content} components={{ hero: Hero, faq: Faq, gallery: Gallery }} />
+      <AceSections
+        sections={content}
+        components={{ hero: Hero, faq: Faq, gallery: Gallery, "contact-form": ContactForm }}
+      />
     </>
   );
 }

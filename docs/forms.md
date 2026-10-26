@@ -8,7 +8,7 @@ src/
   pages/api/contact.ts <- where the browser sends it (two lines)
 ```
 
-A site made with `npx @sandboxsonny/ace-kit create` (the Astro starter) already has all of this: `src/contact.form.ts`, `src/pages/api/contact.ts` and a **Contact form** section on its Contact page, with a honeypot and Turnstile built in. Messages are stored from the start; they are emailed once the owners add recipients under Forms in the CMS.
+A site made with `npx @sandboxsonny/ace-kit create` already has all of this: `contact.form.ts`, an endpoint (`src/pages/api/contact.ts` for Astro, `app/routes/contact.ts` for React Router) and a **Contact form** section on its Contact page, with a honeypot and Turnstile built in. Messages are stored from the start; they are emailed once the owners add recipients under Forms in the CMS.
 
 ## Describing a form
 
